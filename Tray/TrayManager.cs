@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -30,7 +31,10 @@ namespace DofusSwap.Tray
             SetConsoleWindowVisibility((Visible = false));
 
             notifyIcon.Click += ToggleVisibility;
-            notifyIcon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            string filePath = Path.Combine(Application.StartupPath, "Icon", "Swords.png");
+            Bitmap bitmap = new Bitmap(filePath);
+            IntPtr handle = bitmap.GetHicon();
+            notifyIcon.Icon = Icon.FromHandle(handle);
             notifyIcon.Visible = true;
             notifyIcon.Text = Application.ProductName;
 
