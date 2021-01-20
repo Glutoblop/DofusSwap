@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DofusSwap", "DofusSwap.csproj", "{29BAD7D0-6B14-4715-823E-812792DA7258}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29BAD7D0-6B14-4715-823E-812792DA7258}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29BAD7D0-6B14-4715-823E-812792DA7258}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29BAD7D0-6B14-4715-823E-812792DA7258}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29BAD7D0-6B14-4715-823E-812792DA7258}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6BE10418-755C-4C51-ADE7-35FA024CC488}
+	EndGlobalSection
+EndGlobal

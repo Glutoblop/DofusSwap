@@ -1,0 +1,63 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace DofusSwap.Dofus
+{
+    class DofusClientManager
+    {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        public List<DofusClient> Clients;
+        private Process[] _DofusProcesses;
+
+        public void Init()
+        {
+            string clientConfig = File.ReadAllText("dofusclients.json");
+            Clients = JsonConvert.DeserializeObject<List<DofusClient>>(clientConfig);
+
+            foreach (DofusClient dofusClient in Clients)
+            {
+                dofusClient.KeyBind = (Keys)Enum.Parse(typeof(Keys), dofusClient.key);
+            }
+
+            _DofusProcesses = Process.GetProcesses().Where(s =>
+            {
+                string processName = s.ProcessName;
+                return !processName.Equals(Application.ProductName) && processName.Contains("Dofus");
+
+            }).ToArray();
+        }
+
+        public void OnKeyDown(IntPtr mHWnd, Keys keyPressed)
+        {
+            //Find the process that matches the key press
+
+            foreach (Process process in _DofusProcesses)
+            {
+                foreach (DofusClient dofusClient in Clients)
+                {
+                    if (dofusClient.KeyBind == keyPressed && process.MainWindowTitle.StartsWith(dofusClient.name))
+                    {
+                        SetForegroundWindow(process.MainWindowHandle);
+                        SwitchToThisWindow(process.MainWindowHandle, true);
+                        BringWindowToTop(process.MainWindowHandle);
+
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
