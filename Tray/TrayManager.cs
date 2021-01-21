@@ -8,27 +8,16 @@ namespace DofusSwap.Tray
 {
     public class TrayManager
     {
-        [DllImport("user32.dll")]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        public static void SetConsoleWindowVisibility(bool visible)
-        {
-            IntPtr hWnd = FindWindow(null, Console.Title);
-            if (hWnd != IntPtr.Zero)
-            {
-                if (visible) ShowWindow(hWnd, 1); //1 = SW_SHOWNORMAL           
-                else ShowWindow(hWnd, 0); //0 = SW_HIDE               
-            }
-        }
-
         static NotifyIcon notifyIcon = new NotifyIcon();
 
-        static bool Visible = true;
+        public event Action<bool> OnVisbilityToggled;
+
+        private bool _Visible;
 
         public void Init()
         {
-            SetConsoleWindowVisibility((Visible = false));
+            _Visible = false;
+            OnVisbilityToggled?.Invoke(_Visible);
 
             notifyIcon.Click += ToggleVisibility;
             string filePath = Path.Combine(Application.StartupPath, "Icon", "Swords.png");
@@ -43,10 +32,10 @@ namespace DofusSwap.Tray
             notifyIcon.ContextMenuStrip = contextMenu;
         }
 
-        private static void ToggleVisibility(object sender, EventArgs e)
+        private void ToggleVisibility(object sender, EventArgs e)
         {
-            Visible = !Visible;
-            SetConsoleWindowVisibility(Visible);
+            _Visible = !_Visible;
+            OnVisbilityToggled?.Invoke(_Visible);
         }
 
         public void Stop()
