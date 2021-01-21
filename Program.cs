@@ -3,16 +3,17 @@ using System.Windows.Forms;
 
 namespace DofusSwap
 {
-    class Program
+    static class Program
     {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
-            DofusForm dofusForm = new DofusForm();
-
-            // Standard message loop to catch click-events on notify icon
-            // Code after this method will be running only after Application.Exit()
-            Application.Run(dofusForm);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new DofusForm());
         }
     }
 }
