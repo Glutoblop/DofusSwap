@@ -32,32 +32,54 @@ namespace DofusSwap.Dofus
                 dofusClient.KeyBind = (Keys)Enum.Parse(typeof(Keys), dofusClient.key);
             }
 
+            RefreshProcessList();
+        }
+
+        private DofusClient GetClient(Keys key, out Process clientProcess)
+        {
+            clientProcess = null;
+
+            foreach (Process process in _DofusProcesses)
+            {
+                foreach (DofusClient dofusClient in Clients)
+                {
+                    if (dofusClient.KeyBind == key && process.MainWindowTitle.StartsWith(dofusClient.name))
+                    {
+                        clientProcess = process;
+                        return dofusClient;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public void OnKeyDown(IntPtr mHWnd, Keys keyPressed)
+        {
+            //Find the process that matches the key press
+            DofusClient client = GetClient(keyPressed, out Process clientProcess);
+            if (client == null)
+            {
+                RefreshProcessList();
+                client = GetClient(keyPressed, out clientProcess);
+            }
+
+            if (client != null)
+            {
+                SetForegroundWindow(clientProcess.MainWindowHandle);
+                SwitchToThisWindow(clientProcess.MainWindowHandle, true);
+                BringWindowToTop(clientProcess.MainWindowHandle);
+            }
+        }
+
+        private void RefreshProcessList()
+        {
             _DofusProcesses = Process.GetProcesses().Where(s =>
             {
                 string processName = s.ProcessName;
                 return !processName.Equals(Application.ProductName) && processName.Contains("Dofus");
 
             }).ToArray();
-        }
-
-        public void OnKeyDown(IntPtr mHWnd, Keys keyPressed)
-        {
-            //Find the process that matches the key press
-
-            foreach (Process process in _DofusProcesses)
-            {
-                foreach (DofusClient dofusClient in Clients)
-                {
-                    if (dofusClient.KeyBind == keyPressed && process.MainWindowTitle.StartsWith(dofusClient.name))
-                    {
-                        SetForegroundWindow(process.MainWindowHandle);
-                        SwitchToThisWindow(process.MainWindowHandle, true);
-                        BringWindowToTop(process.MainWindowHandle);
-
-                        return;
-                    }
-                }
-            }
         }
     }
 }
