@@ -88,5 +88,10 @@ namespace DofusSwap
         }
 
         #endregion
+
+        private void RefreshConfigButton_Click(object sender, EventArgs e)
+        {
+            _DofusClientManager.RefreshConfig();
+        }
     }
 }

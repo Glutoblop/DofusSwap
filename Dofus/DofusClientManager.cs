@@ -24,8 +24,7 @@ namespace DofusSwap.Dofus
 
         public void Init()
         {
-            string clientConfig = File.ReadAllText("dofusclients.json");
-            Clients = JsonConvert.DeserializeObject<List<DofusClient>>(clientConfig);
+            RefreshConfig();
 
             foreach (DofusClient dofusClient in Clients)
             {
@@ -33,6 +32,12 @@ namespace DofusSwap.Dofus
             }
 
             RefreshProcessList();
+        }
+
+        public void RefreshConfig()
+        {
+            string clientConfig = File.ReadAllText("dofusclients.json");
+            Clients = JsonConvert.DeserializeObject<List<DofusClient>>(clientConfig);
         }
 
         private DofusClient GetClient(Keys key, out Process clientProcess)
