@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace DofusSwap.Dofus
 {
     [Serializable]
-    public class DofusClient
+    public class DofusClientData
     {
         public string name;
         public string key;

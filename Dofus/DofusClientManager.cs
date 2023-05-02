@@ -19,34 +19,39 @@ namespace DofusSwap.Dofus
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         public static extern bool BringWindowToTop(IntPtr hWnd);
 
-        public List<DofusClient> Clients;
+        public List<DofusClientData> Clients;
         private Process[] _DofusProcesses;
 
         public void Init()
         {
             RefreshConfig();
-
-            foreach (DofusClient dofusClient in Clients)
-            {
-                dofusClient.KeyBind = (Keys)Enum.Parse(typeof(Keys), dofusClient.key);
-            }
-
             RefreshProcessList();
+        }
+
+        public void UpdateConfig(List<DofusClientData> clients)
+        {
+            var clientsJson = JsonConvert.SerializeObject(clients);
+            File.WriteAllText("dofusclients.json", clientsJson);
         }
 
         public void RefreshConfig()
         {
             string clientConfig = File.ReadAllText("dofusclients.json");
-            Clients = JsonConvert.DeserializeObject<List<DofusClient>>(clientConfig);
+            Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig);
+
+            foreach (var dofusClient in Clients)
+            {
+                dofusClient.KeyBind = Enum.TryParse(dofusClient.key, true, out Keys key) ? key : Keys.None;
+            }
         }
 
-        private DofusClient GetClient(Keys key, out Process clientProcess)
+        private DofusClientData GetClient(Keys key, out Process clientProcess)
         {
             clientProcess = null;
 
             foreach (Process process in _DofusProcesses)
             {
-                foreach (DofusClient dofusClient in Clients)
+                foreach (DofusClientData dofusClient in Clients)
                 {
                     if (dofusClient.KeyBind == key && process.MainWindowTitle.StartsWith(dofusClient.name))
                     {
@@ -59,17 +64,17 @@ namespace DofusSwap.Dofus
             return null;
         }
 
-        public void OnKeyDown(IntPtr mHWnd, Keys keyPressed)
+        public void OnKeyDown(Keys keyPressed)
         {
             //Find the process that matches the key press
-            DofusClient client = GetClient(keyPressed, out Process clientProcess);
-            if (client == null)
+            DofusClientData clientData = GetClient(keyPressed, out Process clientProcess);
+            if (clientData == null)
             {
                 RefreshProcessList();
-                client = GetClient(keyPressed, out clientProcess);
+                clientData = GetClient(keyPressed, out clientProcess);
             }
 
-            if (client != null)
+            if (clientData != null)
             {
                 SetForegroundWindow(clientProcess.MainWindowHandle);
                 SwitchToThisWindow(clientProcess.MainWindowHandle, true);

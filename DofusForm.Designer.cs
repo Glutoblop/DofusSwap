@@ -30,25 +30,47 @@ namespace DofusSwap
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DofusForm));
-            this.RefreshConfigButton = new System.Windows.Forms.Button();
+            this.AddCharacterButton = new System.Windows.Forms.Button();
+            this.ActiveCharacters = new System.Windows.Forms.FlowLayoutPanel();
+            this.SaveButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // RefreshConfigButton
+            // AddCharacterButton
             // 
-            this.RefreshConfigButton.Location = new System.Drawing.Point(12, 12);
-            this.RefreshConfigButton.Name = "RefreshConfigButton";
-            this.RefreshConfigButton.Size = new System.Drawing.Size(137, 34);
-            this.RefreshConfigButton.TabIndex = 0;
-            this.RefreshConfigButton.Text = "Refresh Config";
-            this.RefreshConfigButton.UseVisualStyleBackColor = true;
-            this.RefreshConfigButton.Click += new System.EventHandler(this.RefreshConfigButton_Click);
+            this.AddCharacterButton.Location = new System.Drawing.Point(12, 12);
+            this.AddCharacterButton.Name = "AddCharacterButton";
+            this.AddCharacterButton.Size = new System.Drawing.Size(106, 36);
+            this.AddCharacterButton.TabIndex = 1;
+            this.AddCharacterButton.Text = "Add Character";
+            this.AddCharacterButton.UseVisualStyleBackColor = true;
+            this.AddCharacterButton.Click += new System.EventHandler(this.AddCharacterButton_Click);
+            // 
+            // ActiveCharacters
+            // 
+            this.ActiveCharacters.AutoScroll = true;
+            this.ActiveCharacters.Location = new System.Drawing.Point(12, 54);
+            this.ActiveCharacters.Name = "ActiveCharacters";
+            this.ActiveCharacters.Size = new System.Drawing.Size(580, 416);
+            this.ActiveCharacters.TabIndex = 2;
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Location = new System.Drawing.Point(483, 12);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(109, 36);
+            this.SaveButton.TabIndex = 3;
+            this.SaveButton.Text = "Save";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // DofusForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.RefreshConfigButton);
+            this.ClientSize = new System.Drawing.Size(604, 479);
+            this.Controls.Add(this.SaveButton);
+            this.Controls.Add(this.ActiveCharacters);
+            this.Controls.Add(this.AddCharacterButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "DofusForm";
             this.Text = "DofusSwap";
@@ -57,8 +79,9 @@ namespace DofusSwap
         }
 
         #endregion
-
-        private System.Windows.Forms.Button RefreshConfigButton;
+        private System.Windows.Forms.Button AddCharacterButton;
+        private System.Windows.Forms.FlowLayoutPanel ActiveCharacters;
+        private System.Windows.Forms.Button SaveButton;
     }
 }
 
