@@ -20,7 +20,7 @@ namespace DofusSwap.Dofus
         public static extern bool BringWindowToTop(IntPtr hWnd);
 
         public List<DofusClientData> Clients;
-        private Process[] _DofusProcesses;
+        private List<Process> _DofusProcesses;
 
         private static string jsonFileName = "dofusclients.json";
 
@@ -95,12 +95,20 @@ namespace DofusSwap.Dofus
 
         private void RefreshProcessList()
         {
-            _DofusProcesses = Process.GetProcesses().Where(s =>
-            {
-                string processName = s.ProcessName;
-                return !processName.Equals(Application.ProductName) && processName.Contains("Dofus");
+            _DofusProcesses = new List<Process>();
 
-            }).ToArray();
+            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToArray();
+            foreach (var process in processes)
+            {
+                foreach (var client in Clients)
+                {
+                    if (process.MainWindowTitle.StartsWith(client.name))
+                    {
+                        _DofusProcesses.Add(process);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
