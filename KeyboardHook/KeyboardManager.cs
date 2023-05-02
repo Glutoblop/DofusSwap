@@ -7,6 +7,7 @@ namespace DofusSwap.KeyboardHook
     public class KeyboardManager
     {
         //https://gist.github.com/Stasonix/3181083
+        //https://stackoverflow.com/questions/10740346/setforegroundwindow-only-working-while-visual-studio-is-open
 
         // ... { GLOBAL HOOK }
         [DllImport("user32.dll")]
@@ -21,6 +22,9 @@ namespace DofusSwap.KeyboardHook
         [DllImport("kernel32.dll")]
         static extern IntPtr LoadLibrary(string lpFileName);
 
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         const int WH_KEYBOARD_LL = 13; // Номер глобального LowLevel-хука на клавиатуру
@@ -29,6 +33,10 @@ namespace DofusSwap.KeyboardHook
         private IntPtr _WindowsHookEx = IntPtr.Zero;
 
         private LowLevelKeyboardProc _KeyboardProc;// = KeyboardHookProc;
+
+        private const int ALT = 0xA4;
+        private const int EXTENDEDKEY = 0x1;
+        private const int KEYUP = 0x2;
 
         public void SetHook()
         {
@@ -45,8 +53,14 @@ namespace DofusSwap.KeyboardHook
         {
             if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
+                //Simualte alt key down
+                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
+
                 var key = (Keys)Marshal.ReadInt32(lParam);
                 OnKeyPressed?.Invoke(key);
+
+                // Simulate a key release
+                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
 
                 return (IntPtr)0;
             }
