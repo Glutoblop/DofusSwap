@@ -59,7 +59,7 @@ namespace DofusSwap
             configuredCharacter.SetHotkey(key);
             ActiveCharacters.Controls.Add(configuredCharacter);
 
-            configuredCharacter.OnModified += character =>
+            void UpdateConfigs()
             {
                 List<DofusClientData> clients = new List<DofusClientData>();
                 foreach (var activeCharacter in _ActiveCharacters)
@@ -71,8 +71,12 @@ namespace DofusSwap
                         name = activeCharacter.DisplayName
                     });
                 }
+
                 _DofusClientManager.UpdateConfig(clients);
-            };
+                _DofusClientManager.RefreshConfig();
+            }
+
+            configuredCharacter.OnModified += character => { UpdateConfigs(); };
 
             configuredCharacter.OnDeleted += deletedCharacter =>
             {
@@ -83,6 +87,8 @@ namespace DofusSwap
             _ActiveCharacters.Add(configuredCharacter);
 
             AddCharacterButton.Enabled = _ActiveCharacters.Count < 8;
+
+            UpdateConfigs();
         }
 
         private void OnClosed(object sender, EventArgs e)
