@@ -48,7 +48,7 @@ namespace DofusSwap.KeyboardHook
                 var key = (Keys)Marshal.ReadInt32(lParam);
                 OnKeyPressed?.Invoke(key);
 
-                return (IntPtr)1;
+                return (IntPtr)0;
             }
             else
             {
