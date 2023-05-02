@@ -8,7 +8,7 @@ namespace DofusSwap.Prefabs
     {
         public event Action<ConfiguredCharacter> OnModified;
         public event Action<ConfiguredCharacter> OnDeleted;
-        
+
         public string DisplayName => CharacterLabel.Text;
 
         public Keys Key => Enum.TryParse(CharacterHotkeyButton.Text, true, out Keys key) ? key : Keys.None;
@@ -25,10 +25,7 @@ namespace DofusSwap.Prefabs
 
         public void SetDisplayName(string displayName)
         {
-            if (displayName == "")
-            {
-                displayName = "[ NOT ASSIGNED ]";
-            }
+            if (displayName == "") displayName = "[ NOT ASSIGNED ]";
             CharacterLabel.Text = displayName;
         }
 
@@ -37,7 +34,7 @@ namespace DofusSwap.Prefabs
             CharacterHotkeyButton.Text = key == Keys.None ? "[ NOT ASSIGNED ] " : key.ToString();
         }
 
-        private void CharacterLabel_Leave(object sender, System.EventArgs e)
+        private void CharacterLabel_Leave(object sender, EventArgs e)
         {
             OnModified?.Invoke(this);
         }
@@ -57,9 +54,9 @@ namespace DofusSwap.Prefabs
 
             CharacterHotkeyButton.Text = "Press Key..";
 
-            var keyPressTask = Task.Factory.StartNew(async () =>
+            var keyPressTask = Task.Factory.StartNew(() =>
             {
-                var endTime = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+                var endTime = DateTime.UtcNow + TimeSpan.FromSeconds(10);
 
                 while (true)
                 {
@@ -69,15 +66,12 @@ namespace DofusSwap.Prefabs
                     }
 
                     //If 5 seconds have passed, timeout
-                    if (endTime < DateTime.UtcNow)
-                    {
-                        return;
-                    }
+                    if (endTime < DateTime.UtcNow) return;
                 }
             });
 
             await keyPressTask;
-            
+
             if (_Keyhit != Keys.None)
             {
                 SetHotkey(_Keyhit);
@@ -92,9 +86,11 @@ namespace DofusSwap.Prefabs
             _WaitingForKeyPress = false;
         }
 
-        public void KeyPressed(Keys key)
+        public bool OnKeyPressed(Keys key)
         {
+            if (!_WaitingForKeyPress) return false;
             _Keyhit = key;
+            return true;
         }
     }
 }

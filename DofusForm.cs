@@ -106,13 +106,17 @@ namespace DofusSwap
             {
                 foreach (var configuredCharacter in _ActiveCharacters)
                 {
-                    configuredCharacter.KeyPressed(key);
+                    if (configuredCharacter.OnKeyPressed(key))
+                    {
+                        break;
+                    }
                 }
             }
             else
             {
                 Console.WriteLine($"Key pressed: {key}");
-                _DofusClientManager?.HandleKeyDown(key);
+                _DofusClientManager.HandleKeyDown(key);
+
             }
         }
         

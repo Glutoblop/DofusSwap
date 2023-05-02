@@ -4,20 +4,28 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace DofusSwap.Dofus
 {
     class DofusClientManager
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
 
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [DllImport("user32.dll")]
         public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+        private const int ALT = 0xA4;
+        private const int EXTENDEDKEY = 0x1;
+        private const int KEYUP = 0x2;
 
         public List<DofusClientData> Clients;
         private List<Process> _DofusProcesses;
@@ -30,9 +38,11 @@ namespace DofusSwap.Dofus
             RefreshProcessList();
         }
 
-        public void UpdateConfig(List<DofusClientData> clients)
+        public void UpdateConfig(List<DofusClientData> clients = null)
         {
-            var clientsJson = JsonConvert.SerializeObject(clients);
+            if (clients == null) clients = Clients;
+
+            var clientsJson = JsonConvert.SerializeObject(clients, Formatting.Indented);
             File.WriteAllText(jsonFileName, clientsJson);
         }
 
@@ -83,9 +93,15 @@ namespace DofusSwap.Dofus
 
             if (clientData != null)
             {
+                //Simualte alt key down
+                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
+
                 SetForegroundWindow(clientProcess.MainWindowHandle);
                 SwitchToThisWindow(clientProcess.MainWindowHandle, true);
                 BringWindowToTop(clientProcess.MainWindowHandle);
+
+                // Simulate a key release
+                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
 
                 return true;
             }
