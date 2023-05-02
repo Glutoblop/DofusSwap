@@ -31,6 +31,11 @@ namespace DofusSwap.Tray
             notifyIcon.ContextMenuStrip = contextMenu;
         }
 
+        public void VisibilityChanged(bool value)
+        {
+            _Visible = value;
+        }
+
         private void ToggleVisibility(object sender, EventArgs e)
         {
             _Visible = !_Visible;

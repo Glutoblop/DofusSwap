@@ -22,6 +22,8 @@ namespace DofusSwap.Dofus
         public List<DofusClientData> Clients;
         private Process[] _DofusProcesses;
 
+        private static string jsonFileName = "dofusclients.json";
+
         public void Init()
         {
             RefreshConfig();
@@ -31,12 +33,17 @@ namespace DofusSwap.Dofus
         public void UpdateConfig(List<DofusClientData> clients)
         {
             var clientsJson = JsonConvert.SerializeObject(clients);
-            File.WriteAllText("dofusclients.json", clientsJson);
+            File.WriteAllText(jsonFileName, clientsJson);
         }
 
         public void RefreshConfig()
         {
-            string clientConfig = File.ReadAllText("dofusclients.json");
+            if (!File.Exists(jsonFileName))
+            {
+                File.CreateText(jsonFileName);
+            }
+
+            string clientConfig = File.ReadAllText(jsonFileName);
             Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig);
 
             foreach (var dofusClient in Clients)
@@ -64,7 +71,7 @@ namespace DofusSwap.Dofus
             return null;
         }
 
-        public void OnKeyDown(Keys keyPressed)
+        public bool HandleKeyDown(Keys keyPressed)
         {
             //Find the process that matches the key press
             DofusClientData clientData = GetClient(keyPressed, out Process clientProcess);
@@ -79,7 +86,11 @@ namespace DofusSwap.Dofus
                 SetForegroundWindow(clientProcess.MainWindowHandle);
                 SwitchToThisWindow(clientProcess.MainWindowHandle, true);
                 BringWindowToTop(clientProcess.MainWindowHandle);
+
+                return true;
             }
+
+            return false;
         }
 
         private void RefreshProcessList()

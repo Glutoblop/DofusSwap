@@ -3,34 +3,37 @@ using DofusSwap.Prefabs;
 using DofusSwap.Tray;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using DofusSwap.KeyboardHook;
 
 namespace DofusSwap
 {
     public partial class DofusForm : Form
     {
+        #region GLOBAL HOOK
+        
+
+        #endregion
+
         private TrayManager _TrayManager;
+        private KeyboardManager _KeyboardManager;
         private DofusClientManager _DofusClientManager;
-        private Hotkey[] _FunctionHotKeys;
 
         private List<ConfiguredCharacter> _ActiveCharacters = new List<ConfiguredCharacter>();
-
+        
         public DofusForm()
         {
             _TrayManager = new TrayManager();
             _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisbilityToggled;
 
+            _KeyboardManager = new KeyboardManager();
+            _KeyboardManager.OnKeyPressed += OnKeyboardHookPress;
+
             _DofusClientManager = new DofusClientManager();
 
             _TrayManager.Init();
             _DofusClientManager.Init();
-
-            _FunctionHotKeys = new Hotkey[_DofusClientManager.Clients.Count];
-            for (int i = 0; i < _FunctionHotKeys.Length; i++)
-            {
-                _FunctionHotKeys[i] = new Hotkey(Hotkey.Constants.NOMOD, _DofusClientManager.Clients[i].KeyBind, this);
-                _FunctionHotKeys[i].Register();
-            }
 
             KeyPreview = true;
 
@@ -97,47 +100,52 @@ namespace DofusSwap
             Visible = vis;
         }
 
-        private Keys GetKey(IntPtr LParam)
+        private void OnKeyboardHookPress(Keys key)
         {
-            return (Keys)((LParam.ToInt32()) >> 16); // not all of the parenthesis are needed, I just found it easier to see what's happening
+            if (Visible)
+            {
+                foreach (var configuredCharacter in _ActiveCharacters)
+                {
+                    configuredCharacter.KeyPressed(key);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Key pressed: {key}");
+                _DofusClientManager?.HandleKeyDown(key);
+            }
         }
-
+        
 
         #region Overrides of Form
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override void OnActivated(EventArgs e)
         {
-            base.OnKeyDown(e);
-            foreach (var configuredCharacter in _ActiveCharacters)
-            {
-                configuredCharacter.KeyPressed(e.KeyCode);
-            }
+            base.OnActivated(e);
+            _TrayManager.VisibilityChanged(Visible = true);
         }
 
-
-        protected override void WndProc(ref Message m)
+        protected override void OnDeactivate(EventArgs e)
         {
-            if (m.Msg == Hotkey.Constants.WM_HOTKEY_MSG_ID)
-            {
-                Keys keyPressed = GetKey(m.LParam);
-                Console.WriteLine($"[Hot Key Detected] {keyPressed}");
-                _DofusClientManager.OnKeyDown(keyPressed);
-            }
-
-            base.WndProc(ref m);
+            base.OnDeactivate(e);
+            _TrayManager.VisibilityChanged(Visible = false);
         }
 
         #endregion
-        
+
         private void AddCharacterButton_Click(object sender, EventArgs e)
         {
             AddCharacter("", Keys.None);
         }
 
-        private void SaveButton_Click(object sender, EventArgs e)
+        private void DofusForm_Load(object sender, EventArgs e)
         {
-            //Unregistering hotkeys doesnt seem to work, so instead just restarting the application will release the hotkeys of old
-            Application.Restart();
+            _KeyboardManager.SetHook();
+        }
+
+        private void DofusForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _KeyboardManager.UnHook();
         }
     }
 }

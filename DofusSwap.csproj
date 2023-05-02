@@ -91,7 +91,8 @@
     </Compile>
     <Compile Include="Dofus\DofusClientData.cs" />
     <Compile Include="Dofus\DofusClientManager.cs" />
-    <Compile Include="Hotkey.cs" />
+    <Compile Include="Hotkey\Hotkey.cs" />
+    <Compile Include="KeyboardHook\KeyboardManager.cs" />
     <Compile Include="Prefabs\ConfiguredCharacter.cs">
       <SubType>UserControl</SubType>
     </Compile>

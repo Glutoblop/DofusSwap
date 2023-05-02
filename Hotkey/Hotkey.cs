@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace DofusSwap
+namespace DofusSwap.Hotkey
 {
     //Using https://www.dreamincode.net/forums/topic/180436-global-hotkeys/
     public sealed class Hotkey
