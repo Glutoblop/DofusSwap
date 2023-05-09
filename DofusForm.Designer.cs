@@ -68,8 +68,8 @@ namespace DofusSwap
             // ConfigToolMenuStripItem
             // 
             this.ConfigToolMenuStripItem.Name = "ConfigToolMenuStripItem";
-            this.ConfigToolMenuStripItem.Size = new System.Drawing.Size(55, 20);
-            this.ConfigToolMenuStripItem.Text = "Config";
+            this.ConfigToolMenuStripItem.Size = new System.Drawing.Size(52, 20);
+            this.ConfigToolMenuStripItem.Text = "Folder";
             this.ConfigToolMenuStripItem.Click += new System.EventHandler(this.ConfigToolStrip_OnClick);
             // 
             // DofusForm
