@@ -44,9 +44,9 @@ namespace DofusSwap
 
             _DofusClientManager.RefreshConfig();
 
-            for (int i = 0; i < _DofusClientManager.Clients.Count; i++)
+            foreach (var client in _DofusClientManager.Clients)
             {
-                AddCharacter(_DofusClientManager.Clients[i].name, _DofusClientManager.Clients[i].KeyBind);
+                AddCharacter(client.name, client.KeyBind);
             }
         }
 
@@ -156,6 +156,22 @@ namespace DofusSwap
         private void DofusForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             _KeyboardManager.UnHook();
+        }
+
+        private void ConfigToolStrip_OnClick(object sender, EventArgs e)
+        {
+            if (sender is ToolStripMenuItem ts && ts.Name == "ConfigToolMenuStripItem")
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() {
+                    FileName = DofusClientManager.CONFIG_FILE_PATH,
+                    UseShellExecute = true,
+                    Verb = "open"
+                });
+
+#if !DEBUG
+                
+#endif
+            }
         }
     }
 }

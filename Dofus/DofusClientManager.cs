@@ -31,10 +31,20 @@ namespace DofusSwap.Dofus
         public List<DofusClientData> Clients;
         private List<Process> _DofusProcesses;
 
-        private static string jsonFileName = "dofusclients.json";
+        public static string CONFIG_FILE_PATH = "";
 
         public void Init()
         {
+            CONFIG_FILE_PATH = "dofusclients.json";
+#if !DEBUG
+            CONFIG_FILE_PATH = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
+#endif
+
+            if (!File.Exists(CONFIG_FILE_PATH))
+            {
+                File.CreateText(CONFIG_FILE_PATH);
+            }
+
             RefreshConfig();
             RefreshProcessList();
         }
@@ -45,22 +55,12 @@ namespace DofusSwap.Dofus
 
             var clientsJson = JsonConvert.SerializeObject(clients, Formatting.Indented);
 
-            string dir = "dofusclients.json";
-#if !DEBUG
-            jsonFileName = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
-#endif
-
-            File.WriteAllText(jsonFileName, clientsJson);
+            File.WriteAllText(CONFIG_FILE_PATH, clientsJson);
         }
 
         public void RefreshConfig()
         {
-            if (!File.Exists(jsonFileName))
-            {
-                File.CreateText(jsonFileName);
-            }
-
-            string clientConfig = File.ReadAllText(jsonFileName);
+            string clientConfig = File.ReadAllText(CONFIG_FILE_PATH);
             Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig);
 
             foreach (var dofusClient in Clients)
