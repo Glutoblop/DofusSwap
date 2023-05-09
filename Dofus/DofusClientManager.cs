@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace DofusSwap.Dofus
 {
-    class DofusClientManager
+    internal class DofusClientManager
     {
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -40,10 +40,7 @@ namespace DofusSwap.Dofus
             CONFIG_FILE_PATH = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
 #endif
 
-            if (!File.Exists(CONFIG_FILE_PATH))
-            {
-                File.CreateText(CONFIG_FILE_PATH);
-            }
+            if (!File.Exists(CONFIG_FILE_PATH)) File.CreateText(CONFIG_FILE_PATH);
 
             RefreshConfig();
             RefreshProcessList();
@@ -60,30 +57,24 @@ namespace DofusSwap.Dofus
 
         public void RefreshConfig()
         {
-            string clientConfig = File.ReadAllText(CONFIG_FILE_PATH);
+            var clientConfig = File.ReadAllText(CONFIG_FILE_PATH);
             Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig);
 
             foreach (var dofusClient in Clients)
-            {
                 dofusClient.KeyBind = Enum.TryParse(dofusClient.key, true, out Keys key) ? key : Keys.None;
-            }
         }
 
         private DofusClientData GetClient(Keys key, out Process clientProcess)
         {
             clientProcess = null;
 
-            foreach (Process process in _DofusProcesses)
-            {
-                foreach (DofusClientData dofusClient in Clients)
+            foreach (var process in _DofusProcesses)
+            foreach (var dofusClient in Clients)
+                if (dofusClient.KeyBind == key && process.MainWindowTitle.StartsWith(dofusClient.name))
                 {
-                    if (dofusClient.KeyBind == key && process.MainWindowTitle.StartsWith(dofusClient.name))
-                    {
-                        clientProcess = process;
-                        return dofusClient;
-                    }
+                    clientProcess = process;
+                    return dofusClient;
                 }
-            }
 
             return null;
         }
@@ -91,7 +82,7 @@ namespace DofusSwap.Dofus
         public bool HandleKeyDown(Keys keyPressed)
         {
             //Find the process that matches the key press
-            DofusClientData clientData = GetClient(keyPressed, out Process clientProcess);
+            var clientData = GetClient(keyPressed, out var clientProcess);
             if (clientData == null)
             {
                 RefreshProcessList();
@@ -101,14 +92,18 @@ namespace DofusSwap.Dofus
             if (clientData != null)
             {
                 //Simualte alt key down
-                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
+                //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
+                keybd_event(0x12,0xb8,0 , 0);
 
                 SetForegroundWindow(clientProcess.MainWindowHandle);
                 SwitchToThisWindow(clientProcess.MainWindowHandle, true);
                 BringWindowToTop(clientProcess.MainWindowHandle);
 
                 // Simulate a key release
-                keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
+                //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
+                keybd_event(0x12,0xb8,0x0002,0);
+
+                //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
 
                 return true;
             }
@@ -120,18 +115,15 @@ namespace DofusSwap.Dofus
         {
             _DofusProcesses = new List<Process>();
 
-            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToArray();
+            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"))
+                .ToArray();
             foreach (var process in processes)
-            {
-                foreach (var client in Clients)
+            foreach (var client in Clients)
+                if (process.MainWindowTitle.StartsWith(client.name))
                 {
-                    if (process.MainWindowTitle.StartsWith(client.name))
-                    {
-                        _DofusProcesses.Add(process);
-                        break;
-                    }
+                    _DofusProcesses.Add(process);
+                    break;
                 }
-            }
         }
     }
 }
