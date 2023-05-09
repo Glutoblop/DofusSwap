@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DofusSwap.KeyboardHook;
+using System.IO;
 
 namespace DofusSwap
 {
@@ -20,10 +21,13 @@ namespace DofusSwap
         private KeyboardManager _KeyboardManager;
         private DofusClientManager _DofusClientManager;
 
+        private bool _Initialising = false;
         private List<ConfiguredCharacter> _ActiveCharacters = new List<ConfiguredCharacter>();
         
         public DofusForm()
         {
+            _Initialising = true;
+
             _TrayManager = new TrayManager();
             _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisbilityToggled;
 
@@ -48,33 +52,16 @@ namespace DofusSwap
             {
                 AddCharacter(client.name, client.KeyBind);
             }
+
+            _Initialising = false;
         }
 
         private void AddCharacter(string displayName, Keys key)
         {
-            if (_ActiveCharacters.Count == 8) return;
-
             var configuredCharacter = new ConfiguredCharacter();
             configuredCharacter.SetDisplayName(displayName);
             configuredCharacter.SetHotkey(key);
             ActiveCharacters.Controls.Add(configuredCharacter);
-
-            void UpdateConfigs()
-            {
-                List<DofusClientData> clients = new List<DofusClientData>();
-                foreach (var activeCharacter in _ActiveCharacters)
-                {
-                    clients.Add(new DofusClientData
-                    {
-                        KeyBind = activeCharacter.Key,
-                        key = activeCharacter.Key.ToString(),
-                        name = activeCharacter.DisplayName
-                    });
-                }
-
-                _DofusClientManager.UpdateConfig(clients);
-                _DofusClientManager.RefreshConfig();
-            }
 
             configuredCharacter.OnModified += character => { UpdateConfigs(); };
 
@@ -89,6 +76,25 @@ namespace DofusSwap
             AddCharacterButton.Enabled = _ActiveCharacters.Count < 8;
 
             UpdateConfigs();
+        }
+
+        private void UpdateConfigs()
+        {
+            if (_Initialising) return;
+
+            List<DofusClientData> clients = new List<DofusClientData>();
+            foreach (var activeCharacter in _ActiveCharacters)
+            {
+                clients.Add(new DofusClientData
+                {
+                    KeyBind = activeCharacter.Key,
+                    key = activeCharacter.Key.ToString(),
+                    name = activeCharacter.DisplayName
+                });
+            }
+
+            _DofusClientManager.UpdateConfig(clients);
+            _DofusClientManager.RefreshConfig();
         }
 
         private void OnClosed(object sender, EventArgs e)
@@ -145,6 +151,7 @@ namespace DofusSwap
 
         private void AddCharacterButton_Click(object sender, EventArgs e)
         {
+            if (_ActiveCharacters.Count == 8) return;
             AddCharacter("", Keys.None);
         }
 
@@ -162,8 +169,11 @@ namespace DofusSwap
         {
             if (sender is ToolStripMenuItem ts && ts.Name == "ConfigToolMenuStripItem")
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() {
-                    FileName = DofusClientManager.CONFIG_FILE_PATH,
+                var dir = new FileInfo(DofusClientManager.CONFIG_FILE_PATH);
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() 
+                {
+                    FileName = dir.DirectoryName,
                     UseShellExecute = true,
                     Verb = "open"
                 });
