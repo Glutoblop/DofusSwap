@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -43,6 +44,12 @@ namespace DofusSwap.Dofus
             if (clients == null) clients = Clients;
 
             var clientsJson = JsonConvert.SerializeObject(clients, Formatting.Indented);
+
+            string dir = "dofusclients.json";
+#if !DEBUG
+            jsonFileName = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
+#endif
+
             File.WriteAllText(jsonFileName, clientsJson);
         }
 
