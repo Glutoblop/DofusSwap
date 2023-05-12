@@ -53,6 +53,11 @@ namespace DofusSwap
                 AddCharacter(client.name, client.KeyBind);
             }
 
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fvi.FileVersion;
+            Text = $"Dofus Swap - {version}";
+
             _Initialising = false;
         }
 
