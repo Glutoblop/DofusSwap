@@ -6,6 +6,8 @@ namespace DofusSwap.Prefabs
 {
     public partial class ConfiguredCharacter : UserControl
     {
+        
+        public event Action<ConfiguredCharacter> OnSelected;
         public event Action<ConfiguredCharacter> OnModified;
         public event Action<ConfiguredCharacter> OnDeleted;
 
@@ -93,6 +95,11 @@ namespace DofusSwap.Prefabs
             if (!_WaitingForKeyPress) return false;
             _Keyhit = key;
             return true;
+        }
+
+        private void CharacterLabel_MouseClick(object sender, MouseEventArgs e)
+        {
+            OnSelected?.Invoke(this);
         }
     }
 }

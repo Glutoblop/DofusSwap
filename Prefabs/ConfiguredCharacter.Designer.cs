@@ -54,6 +54,7 @@ namespace DofusSwap.Prefabs
             this.CharacterLabel.Size = new System.Drawing.Size(272, 25);
             this.CharacterLabel.TabIndex = 3;
             this.CharacterLabel.Text = "[ NOT ASSIGNED ]";
+            this.CharacterLabel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.CharacterLabel_MouseClick);
             this.CharacterLabel.Leave += new System.EventHandler(this.CharacterLabel_Leave);
             // 
             // RemoveCharacterButton

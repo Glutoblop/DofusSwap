@@ -64,6 +64,11 @@ namespace DofusSwap
             configuredCharacter.SetHotkey(key);
             ActiveCharacters.Controls.Add(configuredCharacter);
 
+            configuredCharacter.OnSelected += character =>
+            {
+                _FocusedIndex = _ActiveCharacters.IndexOf(character);
+            };
+
             configuredCharacter.OnModified += character => { UpdateConfigs(); };
 
             configuredCharacter.OnDeleted += deletedCharacter =>
