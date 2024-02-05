@@ -1,21 +1,16 @@
 ﻿using DofusSwap.Dofus;
+using DofusSwap.KeyboardHook;
 using DofusSwap.Prefabs;
 using DofusSwap.Tray;
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
-using DofusSwap.KeyboardHook;
 using System.IO;
+using System.Windows.Forms;
 
 namespace DofusSwap
 {
     public partial class DofusForm : Form
     {
-        #region GLOBAL HOOK
-        
-
-        #endregion
-
         private TrayManager _TrayManager;
         private KeyboardManager _KeyboardManager;
         private DofusClientManager _DofusClientManager;
@@ -78,7 +73,7 @@ namespace DofusSwap
             };
 
             _ActiveCharacters.Add(configuredCharacter);
-            
+
             AddCharacterButton.Enabled = _ActiveCharacters.Count < 8;
 
             UpdateConfigs();
@@ -110,12 +105,18 @@ namespace DofusSwap
 
         private void OnShown(object sender, EventArgs e)
         {
-            Visible = false;
+            //Visible = false;
         }
 
         private void TrayManagerOnOnVisbilityToggled(bool vis)
         {
             Visible = vis;
+
+            if (vis)
+            {
+                Show();
+                WindowState = FormWindowState.Normal;
+            }
         }
 
         private void OnKeyboardHookPress(Keys key)
@@ -137,7 +138,7 @@ namespace DofusSwap
 
             }
         }
-        
+
 
         #region Overrides of Form
 
@@ -164,8 +165,6 @@ namespace DofusSwap
         private void DofusForm_Load(object sender, EventArgs e)
         {
             _KeyboardManager.SetHook();
-
-            
         }
 
         private void DofusForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -179,16 +178,12 @@ namespace DofusSwap
             {
                 var dir = new FileInfo(DofusClientManager.CONFIG_FILE_PATH);
 
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo() 
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
                 {
                     FileName = dir.DirectoryName,
                     UseShellExecute = true,
                     Verb = "open"
                 });
-
-#if !DEBUG
-                
-#endif
             }
         }
 
@@ -203,8 +198,12 @@ namespace DofusSwap
             {
                 UpdateConfigs();
             }
+            else if (e.KeyCode == Keys.Escape)
+            {
+                WindowState = FormWindowState.Minimized;
+            }
         }
-            
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Tab)
