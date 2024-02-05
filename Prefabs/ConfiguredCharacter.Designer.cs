@@ -70,9 +70,9 @@ namespace DofusSwap.Prefabs
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.CharacterHotkeyButton);
             this.Controls.Add(this.RemoveCharacterButton);
             this.Controls.Add(this.CharacterLabel);
-            this.Controls.Add(this.CharacterHotkeyButton);
             this.Name = "ConfiguredCharacter";
             this.Size = new System.Drawing.Size(512, 45);
             this.ResumeLayout(false);

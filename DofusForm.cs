@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DofusSwap.KeyboardHook;
 using System.IO;
+using System.Windows.Forms.VisualStyles;
 
 namespace DofusSwap
 {
@@ -77,7 +78,7 @@ namespace DofusSwap
             };
 
             _ActiveCharacters.Add(configuredCharacter);
-
+            
             AddCharacterButton.Enabled = _ActiveCharacters.Count < 8;
 
             UpdateConfigs();
@@ -163,6 +164,8 @@ namespace DofusSwap
         private void DofusForm_Load(object sender, EventArgs e)
         {
             _KeyboardManager.SetHook();
+
+            
         }
 
         private void DofusForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -186,6 +189,19 @@ namespace DofusSwap
 #if !DEBUG
                 
 #endif
+            }
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            UpdateConfigs();
+        }
+
+        private void DofusForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.S && e.Control)
+            {
+                UpdateConfigs();
             }
         }
     }
