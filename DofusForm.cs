@@ -3,11 +3,9 @@ using DofusSwap.Prefabs;
 using DofusSwap.Tray;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DofusSwap.KeyboardHook;
 using System.IO;
-using System.Windows.Forms.VisualStyles;
 
 namespace DofusSwap
 {
@@ -24,7 +22,9 @@ namespace DofusSwap
 
         private bool _Initialising = false;
         private List<ConfiguredCharacter> _ActiveCharacters = new List<ConfiguredCharacter>();
-        
+
+        private int _FocusedIndex = 0;
+
         public DofusForm()
         {
             _Initialising = true;
@@ -203,6 +203,19 @@ namespace DofusSwap
             {
                 UpdateConfigs();
             }
+        }
+            
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Tab)
+            {
+                _FocusedIndex += 1;
+                _FocusedIndex %= _ActiveCharacters.Count;
+                _ActiveCharacters[_FocusedIndex].NameLabel.Select();
+                _ActiveCharacters[_FocusedIndex].NameLabel.SelectAll();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }

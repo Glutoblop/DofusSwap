@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,6 +16,8 @@ namespace DofusSwap.Prefabs
         private bool _WaitingForKeyPress = false;
         private Keys _Keyhit = Keys.None;
 
+        public RichTextBox NameLabel => CharacterLabel;
+        
         public ConfiguredCharacter()
         {
             InitializeComponent();
