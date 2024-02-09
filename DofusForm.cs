@@ -25,7 +25,7 @@ namespace DofusSwap
             _Initialising = true;
 
             _TrayManager = new TrayManager();
-            _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisbilityToggled;
+            _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisibilityToggled;
 
             _KeyboardManager = new KeyboardManager();
             _KeyboardManager.OnKeyPressed += OnKeyboardHookPress;
@@ -113,15 +113,14 @@ namespace DofusSwap
             //Visible = false;
         }
 
-        private void TrayManagerOnOnVisbilityToggled(bool vis)
+        private void TrayManagerOnOnVisibilityToggled(bool vis)
         {
             Visible = vis;
 
-            if (vis)
-            {
-                Show();
-                WindowState = FormWindowState.Normal;
-            }
+            if (!vis) return;
+            WindowState = FormWindowState.Minimized;
+            Show();
+            WindowState = FormWindowState.Normal;
         }
 
         private void OnKeyboardHookPress(Keys key)
