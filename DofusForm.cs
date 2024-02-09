@@ -102,6 +102,7 @@ namespace DofusSwap
                     activeChar.Location = new Point(0, i * activeChar.Size.Height);
                     activeChar.UpdateIndex();
                 }
+                UpdateConfigs();
             };
 
             _ActiveCharacters.Add(configuredCharacter);
