@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Dofus\DofusClientData.cs" />
     <Compile Include="Dofus\DofusClientManager.cs" />
+    <Compile Include="Draggable\ControlExtension.cs" />
     <Compile Include="Hotkey\Hotkey.cs" />
     <Compile Include="KeyboardHook\KeyboardManager.cs" />
     <Compile Include="Prefabs\ConfiguredCharacter.cs">

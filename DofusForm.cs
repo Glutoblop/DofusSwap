@@ -4,6 +4,7 @@ using DofusSwap.Prefabs;
 using DofusSwap.Tray;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -63,6 +64,7 @@ namespace DofusSwap
             configuredCharacter.SetDisplayName(displayName);
             configuredCharacter.SetHotkey(key);
             ActiveCharacters.Controls.Add(configuredCharacter);
+            configuredCharacter.Location = new Point(0, _ActiveCharacters.Count * configuredCharacter.Size.Height);
 
             configuredCharacter.OnSelected += character =>
             {

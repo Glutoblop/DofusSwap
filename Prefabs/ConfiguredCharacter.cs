@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DofusSwap.Draggable;
 
 namespace DofusSwap.Prefabs
 {
@@ -22,6 +24,7 @@ namespace DofusSwap.Prefabs
         
         public ConfiguredCharacter()
         {
+            this.Draggable(true);
             InitializeComponent();
             SetDisplayName("");
             SetHotkey(Keys.None);
@@ -100,6 +103,39 @@ namespace DofusSwap.Prefabs
         private void CharacterLabel_MouseClick(object sender, MouseEventArgs e)
         {
             OnSelected?.Invoke(this);
+        }
+
+        private bool _MouseSelected = false;
+
+        private void DragSelect_DragDrop(object sender, DragEventArgs e)
+        {
+            if (sender is ConfiguredCharacter)
+            {
+
+            }
+        }
+
+        private void ConfiguredCharacter_MouseUp(object sender, MouseEventArgs e)
+        {
+            _MouseSelected = false;
+        }
+
+        private void ConfiguredCharacter_MouseDown(object sender, MouseEventArgs e)
+        {
+            _MouseSelected = true;
+        }
+
+        private void ConfiguredCharacter_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_MouseSelected)
+            {
+                if (sender is ConfiguredCharacter cc)
+                {
+                    cc.Location = new Point(0, cc.Location.Y);
+                }
+
+            }
+
         }
     }
 }
