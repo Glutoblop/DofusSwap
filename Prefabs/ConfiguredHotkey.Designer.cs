@@ -1,7 +1,7 @@
 ﻿
 namespace DofusSwap.Prefabs
 {
-    partial class ConfiguredCharacter
+    partial class ConfiguredHotkey
     {
         /// <summary> 
         /// Required designer variable.
@@ -30,59 +30,43 @@ namespace DofusSwap.Prefabs
         private void InitializeComponent()
         {
             this.CharacterHotkeyButton = new System.Windows.Forms.Button();
-            this.CharacterLabel = new System.Windows.Forms.RichTextBox();
             this.RemoveCharacterButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // CharacterHotkeyButton
             // 
-            this.CharacterHotkeyButton.Location = new System.Drawing.Point(293, 7);
+            this.CharacterHotkeyButton.Location = new System.Drawing.Point(3, 8);
             this.CharacterHotkeyButton.Name = "CharacterHotkeyButton";
             this.CharacterHotkeyButton.Size = new System.Drawing.Size(175, 29);
-            this.CharacterHotkeyButton.TabIndex = 2;
+            this.CharacterHotkeyButton.TabIndex = 7;
             this.CharacterHotkeyButton.Text = "[HOT_KEY]";
             this.CharacterHotkeyButton.UseVisualStyleBackColor = true;
             this.CharacterHotkeyButton.Click += new System.EventHandler(this.CharacterHotkeyButton_Click);
             // 
-            // CharacterLabel
-            // 
-            this.CharacterLabel.AcceptsTab = true;
-            this.CharacterLabel.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.CharacterLabel.Location = new System.Drawing.Point(7, 10);
-            this.CharacterLabel.Multiline = false;
-            this.CharacterLabel.Name = "CharacterLabel";
-            this.CharacterLabel.Size = new System.Drawing.Size(272, 25);
-            this.CharacterLabel.TabIndex = 3;
-            this.CharacterLabel.Text = "[ NOT ASSIGNED ]";
-            this.CharacterLabel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.CharacterLabel_MouseClick);
-            this.CharacterLabel.Leave += new System.EventHandler(this.CharacterLabel_Leave);
-            // 
             // RemoveCharacterButton
             // 
-            this.RemoveCharacterButton.Location = new System.Drawing.Point(475, 7);
+            this.RemoveCharacterButton.Location = new System.Drawing.Point(185, 8);
             this.RemoveCharacterButton.Name = "RemoveCharacterButton";
             this.RemoveCharacterButton.Size = new System.Drawing.Size(32, 29);
-            this.RemoveCharacterButton.TabIndex = 4;
+            this.RemoveCharacterButton.TabIndex = 8;
             this.RemoveCharacterButton.Text = "X";
             this.RemoveCharacterButton.UseVisualStyleBackColor = true;
-            this.RemoveCharacterButton.Click += new System.EventHandler(this.RemoveCharacterButton_Click);
+            this.RemoveCharacterButton.Click += new System.EventHandler(this.RemoveConfig_Click);
             // 
-            // ConfiguredCharacter
+            // ConfiguredHotkey
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.CharacterHotkeyButton);
             this.Controls.Add(this.RemoveCharacterButton);
-            this.Controls.Add(this.CharacterLabel);
-            this.Name = "ConfiguredCharacter";
-            this.Size = new System.Drawing.Size(512, 45);
+            this.Name = "ConfiguredHotkey";
+            this.Size = new System.Drawing.Size(226, 45);
             this.ResumeLayout(false);
 
         }
 
         #endregion
         private System.Windows.Forms.Button CharacterHotkeyButton;
-        private System.Windows.Forms.RichTextBox CharacterLabel;
         private System.Windows.Forms.Button RemoveCharacterButton;
     }
 }

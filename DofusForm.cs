@@ -4,6 +4,7 @@ using DofusSwap.Prefabs;
 using DofusSwap.Tray;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 
@@ -16,7 +17,8 @@ namespace DofusSwap
         private DofusClientManager _DofusClientManager;
 
         private bool _Initialising = false;
-        private List<ConfiguredCharacter> _ActiveCharacters = new List<ConfiguredCharacter>();
+        private List<ConfiguredCharacterName> _ActiveCharacters = new List<ConfiguredCharacterName>();
+        private List<ConfiguredHotkey> _ActiveHotkeys = new List<ConfiguredHotkey>();
 
         private int _FocusedIndex = 0;
 
@@ -59,25 +61,71 @@ namespace DofusSwap
 
         private void AddCharacter(string displayName, Keys key)
         {
-            var configuredCharacter = new ConfiguredCharacter();
+            // --- ADD CHARACTER
+            var configuredCharacter = new ConfiguredCharacterName();
             configuredCharacter.SetDisplayName(displayName);
-            configuredCharacter.SetHotkey(key);
-            ActiveCharacters.Controls.Add(configuredCharacter);
+            configuredCharacter.Location = new Point(0, _ActiveCharacters.Count * configuredCharacter.Size.Height);
+            configuredCharacter.UpdateIndex();
 
             configuredCharacter.OnSelected += character =>
             {
                 _FocusedIndex = _ActiveCharacters.IndexOf(character);
             };
 
-            configuredCharacter.OnModified += character => { UpdateConfigs(); };
-
-            configuredCharacter.OnDeleted += deletedCharacter =>
+            configuredCharacter.OnModified += character =>
             {
-                _ActiveCharacters.Remove(deletedCharacter);
-                ActiveCharacters.Controls.Remove(deletedCharacter);
+                UpdateConfigs();
+            };
+
+            configuredCharacter.OnMovedIndex += (character, oldindex, newindex) =>
+            {
+                if (newindex >= _ActiveCharacters.Count) return;
+
+                //Move the character in the new index, into the old index.
+                var replaced = _ActiveCharacters[newindex];
+                _ActiveCharacters[newindex] = character;
+                _ActiveCharacters[oldindex] = replaced;
+
+                for (var i = 0; i < _ActiveCharacters.Count; i++)
+                {
+                    var activeChar = _ActiveCharacters[i];
+                    if (activeChar == character) continue;
+                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                }
+            };
+
+            configuredCharacter.OnDropped += (character) =>
+            {
+                for (var i = 0; i < _ActiveCharacters.Count; i++)
+                {
+                    var activeChar = _ActiveCharacters[i];
+                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                    activeChar.UpdateIndex();
+                }
+                UpdateConfigs();
             };
 
             _ActiveCharacters.Add(configuredCharacter);
+            ActiveCharacters.Controls.Add(configuredCharacter);
+
+            // --- ADD HOTKEY
+
+            var hotkey = new ConfiguredHotkey();
+            hotkey.SetHotkey(key);
+            hotkey.Location = new Point(0, _ActiveHotkeys.Count * configuredCharacter.Size.Height);
+            
+            hotkey.OnDeleted += deletedHotkey =>
+            {
+                var index = _ActiveHotkeys.IndexOf(deletedHotkey);
+                _ActiveHotkeys.RemoveAt(index);
+                ActiveHotkeys.Controls.Remove(deletedHotkey);
+
+                var character = _ActiveCharacters[index];
+                _ActiveCharacters.RemoveAt(index);
+                ActiveCharacters.Controls.Remove(character);
+            };
+            _ActiveHotkeys.Add(hotkey);
+            ActiveHotkeys.Controls.Add(hotkey);
 
             AddCharacterButton.Enabled = _ActiveCharacters.Count < 8;
 
@@ -89,12 +137,15 @@ namespace DofusSwap
             if (_Initialising) return;
 
             List<DofusClientData> clients = new List<DofusClientData>();
-            foreach (var activeCharacter in _ActiveCharacters)
+            for (var index = 0; index < _ActiveCharacters.Count; index++)
             {
+                var activeCharacter = _ActiveCharacters[index];
+                var hotkey = _ActiveHotkeys[index];
+
                 clients.Add(new DofusClientData
                 {
-                    KeyBind = activeCharacter.Key,
-                    key = activeCharacter.Key.ToString(),
+                    KeyBind = hotkey.Key,
+                    key = hotkey.Key.ToString(),
                     name = activeCharacter.DisplayName
                 });
             }
@@ -128,9 +179,10 @@ namespace DofusSwap
         {
             if (Visible)
             {
-                foreach (var configuredCharacter in _ActiveCharacters)
+                for (var index = 0; index < _ActiveHotkeys.Count; index++)
                 {
-                    if (configuredCharacter.OnKeyPressed(key))
+                    var hotkey = _ActiveHotkeys[index];
+                    if (hotkey.OnKeyPressed(key))
                     {
                         break;
                     }

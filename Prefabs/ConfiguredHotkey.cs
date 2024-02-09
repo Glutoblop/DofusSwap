@@ -4,48 +4,30 @@ using System.Windows.Forms;
 
 namespace DofusSwap.Prefabs
 {
-    public partial class ConfiguredCharacter : UserControl
+    public partial class ConfiguredHotkey : UserControl
     {
-        
-        public event Action<ConfiguredCharacter> OnSelected;
-        public event Action<ConfiguredCharacter> OnModified;
-        public event Action<ConfiguredCharacter> OnDeleted;
-
-        public string DisplayName => CharacterLabel.Text;
+        public Action<ConfiguredHotkey> OnModified { get; set; }
+        public Action<ConfiguredHotkey> OnDeleted { get; set; }
 
         public Keys Key => Enum.TryParse(CharacterHotkeyButton.Text, true, out Keys key) ? key : Keys.None;
 
         private bool _WaitingForKeyPress = false;
         private Keys _Keyhit = Keys.None;
 
-        public RichTextBox NameLabel => CharacterLabel;
-        
-        public ConfiguredCharacter()
+        public ConfiguredHotkey()
         {
             InitializeComponent();
-            SetDisplayName("");
             SetHotkey(Keys.None);
         }
 
-        public void SetDisplayName(string displayName)
+        private void RemoveConfig_Click(object sender, EventArgs e)
         {
-            if (displayName == "") displayName = "[ NOT ASSIGNED ]";
-            CharacterLabel.Text = displayName;
+            OnDeleted?.Invoke(this);
         }
 
         public void SetHotkey(Keys key)
         {
             CharacterHotkeyButton.Text = key == Keys.None ? "[ NOT ASSIGNED ] " : key.ToString();
-        }
-
-        private void CharacterLabel_Leave(object sender, EventArgs e)
-        {
-            OnModified?.Invoke(this);
-        }
-
-        private void RemoveCharacterButton_Click(object sender, EventArgs e)
-        {
-            OnDeleted?.Invoke(this);
         }
 
         private async void CharacterHotkeyButton_Click(object sender, EventArgs e)
@@ -95,11 +77,6 @@ namespace DofusSwap.Prefabs
             if (!_WaitingForKeyPress) return false;
             _Keyhit = key;
             return true;
-        }
-
-        private void CharacterLabel_MouseClick(object sender, MouseEventArgs e)
-        {
-            OnSelected?.Invoke(this);
         }
     }
 }
