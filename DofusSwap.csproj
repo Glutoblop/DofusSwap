@@ -101,11 +101,17 @@
     <Compile Include="Draggable\ControlExtension.cs" />
     <Compile Include="Hotkey\Hotkey.cs" />
     <Compile Include="KeyboardHook\KeyboardManager.cs" />
-    <Compile Include="Prefabs\ConfiguredCharacter.cs">
+    <Compile Include="Prefabs\ConfiguredCharacterName.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Prefabs\ConfiguredCharacter.Designer.cs">
-      <DependentUpon>ConfiguredCharacter.cs</DependentUpon>
+    <Compile Include="Prefabs\ConfiguredCharacterName.Designer.cs">
+      <DependentUpon>ConfiguredCharacterName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Prefabs\ConfiguredHotkey.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Prefabs\ConfiguredHotkey.Designer.cs">
+      <DependentUpon>ConfiguredHotkey.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,8 +120,11 @@
     <EmbeddedResource Include="DofusForm.resx">
       <DependentUpon>DofusForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Prefabs\ConfiguredCharacter.resx">
-      <DependentUpon>ConfiguredCharacter.cs</DependentUpon>
+    <EmbeddedResource Include="Prefabs\ConfiguredCharacterName.resx">
+      <DependentUpon>ConfiguredCharacterName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Prefabs\ConfiguredHotkey.resx">
+      <DependentUpon>ConfiguredHotkey.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

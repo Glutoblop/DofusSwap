@@ -1,7 +1,7 @@
 ﻿
 namespace DofusSwap.Prefabs
 {
-    partial class ConfiguredCharacter
+    partial class ConfiguredCharacterName
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,23 +29,11 @@ namespace DofusSwap.Prefabs
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConfiguredCharacter));
-            this.CharacterHotkeyButton = new System.Windows.Forms.Button();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConfiguredCharacterName));
             this.CharacterLabel = new System.Windows.Forms.RichTextBox();
-            this.RemoveCharacterButton = new System.Windows.Forms.Button();
             this.DragSelect = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.DragSelect)).BeginInit();
             this.SuspendLayout();
-            // 
-            // CharacterHotkeyButton
-            // 
-            this.CharacterHotkeyButton.Location = new System.Drawing.Point(293, 7);
-            this.CharacterHotkeyButton.Name = "CharacterHotkeyButton";
-            this.CharacterHotkeyButton.Size = new System.Drawing.Size(175, 29);
-            this.CharacterHotkeyButton.TabIndex = 2;
-            this.CharacterHotkeyButton.Text = "[HOT_KEY]";
-            this.CharacterHotkeyButton.UseVisualStyleBackColor = true;
-            this.CharacterHotkeyButton.Click += new System.EventHandler(this.CharacterHotkeyButton_Click);
             // 
             // CharacterLabel
             // 
@@ -54,21 +42,11 @@ namespace DofusSwap.Prefabs
             this.CharacterLabel.Location = new System.Drawing.Point(40, 10);
             this.CharacterLabel.Multiline = false;
             this.CharacterLabel.Name = "CharacterLabel";
-            this.CharacterLabel.Size = new System.Drawing.Size(239, 25);
+            this.CharacterLabel.Size = new System.Drawing.Size(228, 25);
             this.CharacterLabel.TabIndex = 3;
             this.CharacterLabel.Text = "[ NOT ASSIGNED ]";
             this.CharacterLabel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.CharacterLabel_MouseClick);
             this.CharacterLabel.Leave += new System.EventHandler(this.CharacterLabel_Leave);
-            // 
-            // RemoveCharacterButton
-            // 
-            this.RemoveCharacterButton.Location = new System.Drawing.Point(475, 7);
-            this.RemoveCharacterButton.Name = "RemoveCharacterButton";
-            this.RemoveCharacterButton.Size = new System.Drawing.Size(32, 29);
-            this.RemoveCharacterButton.TabIndex = 4;
-            this.RemoveCharacterButton.Text = "X";
-            this.RemoveCharacterButton.UseVisualStyleBackColor = true;
-            this.RemoveCharacterButton.Click += new System.EventHandler(this.RemoveCharacterButton_Click);
             // 
             // DragSelect
             // 
@@ -83,17 +61,15 @@ namespace DofusSwap.Prefabs
             this.DragSelect.TabStop = false;
             this.DragSelect.DragDrop += new System.Windows.Forms.DragEventHandler(this.DragSelect_DragDrop);
             // 
-            // ConfiguredCharacter
+            // ConfiguredCharacterName
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.DragSelect);
-            this.Controls.Add(this.CharacterHotkeyButton);
-            this.Controls.Add(this.RemoveCharacterButton);
             this.Controls.Add(this.CharacterLabel);
-            this.Name = "ConfiguredCharacter";
-            this.Size = new System.Drawing.Size(512, 45);
+            this.Name = "ConfiguredCharacterName";
+            this.Size = new System.Drawing.Size(276, 45);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ConfiguredCharacter_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ConfiguredCharacter_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ConfiguredCharacter_MouseUp);
@@ -103,9 +79,7 @@ namespace DofusSwap.Prefabs
         }
 
         #endregion
-        private System.Windows.Forms.Button CharacterHotkeyButton;
         private System.Windows.Forms.RichTextBox CharacterLabel;
-        private System.Windows.Forms.Button RemoveCharacterButton;
         private System.Windows.Forms.PictureBox DragSelect;
     }
 }

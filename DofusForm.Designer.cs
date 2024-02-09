@@ -35,6 +35,7 @@ namespace DofusSwap
             this.ConfigToolMenuStripItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveButton = new System.Windows.Forms.Button();
             this.ActiveCharacters = new System.Windows.Forms.Panel();
+            this.ActiveHotkeys = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -81,8 +82,15 @@ namespace DofusSwap
             // 
             this.ActiveCharacters.Location = new System.Drawing.Point(12, 69);
             this.ActiveCharacters.Name = "ActiveCharacters";
-            this.ActiveCharacters.Size = new System.Drawing.Size(580, 430);
+            this.ActiveCharacters.Size = new System.Drawing.Size(280, 430);
             this.ActiveCharacters.TabIndex = 5;
+            // 
+            // ActiveHotkeys
+            // 
+            this.ActiveHotkeys.Location = new System.Drawing.Point(298, 69);
+            this.ActiveHotkeys.Name = "ActiveHotkeys";
+            this.ActiveHotkeys.Size = new System.Drawing.Size(280, 430);
+            this.ActiveHotkeys.TabIndex = 6;
             // 
             // DofusForm
             // 
@@ -90,6 +98,7 @@ namespace DofusSwap
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(604, 511);
+            this.Controls.Add(this.ActiveHotkeys);
             this.Controls.Add(this.ActiveCharacters);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.AddCharacterButton);
@@ -114,6 +123,7 @@ namespace DofusSwap
         private System.Windows.Forms.ToolStripMenuItem ConfigToolMenuStripItem;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Panel ActiveCharacters;
+        private System.Windows.Forms.Panel ActiveHotkeys;
     }
 }
 
