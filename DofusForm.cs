@@ -121,6 +121,7 @@ namespace DofusSwap
             WindowState = FormWindowState.Minimized;
             Show();
             WindowState = FormWindowState.Normal;
+            Activate();
         }
 
         private void OnKeyboardHookPress(Keys key)
