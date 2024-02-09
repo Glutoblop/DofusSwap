@@ -65,6 +65,7 @@ namespace DofusSwap
             var configuredCharacter = new ConfiguredCharacterName();
             configuredCharacter.SetDisplayName(displayName);
             configuredCharacter.Location = new Point(0, _ActiveCharacters.Count * configuredCharacter.Size.Height);
+            configuredCharacter.UpdateIndex();
 
             configuredCharacter.OnSelected += character =>
             {
@@ -74,6 +75,33 @@ namespace DofusSwap
             configuredCharacter.OnModified += character =>
             {
                 UpdateConfigs();
+            };
+
+            configuredCharacter.OnMovedIndex += (character, oldindex, newindex) =>
+            {
+                if (newindex >= _ActiveCharacters.Count) return;
+
+                //Move the character in the new index, into the old index.
+                var replaced = _ActiveCharacters[newindex];
+                _ActiveCharacters[newindex] = character;
+                _ActiveCharacters[oldindex] = replaced;
+
+                for (var i = 0; i < _ActiveCharacters.Count; i++)
+                {
+                    var activeChar = _ActiveCharacters[i];
+                    if (activeChar == character) continue;
+                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                }
+            };
+
+            configuredCharacter.OnDropped += (character) =>
+            {
+                for (var i = 0; i < _ActiveCharacters.Count; i++)
+                {
+                    var activeChar = _ActiveCharacters[i];
+                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                    activeChar.UpdateIndex();
+                }
             };
 
             _ActiveCharacters.Add(configuredCharacter);

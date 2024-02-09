@@ -59,7 +59,6 @@ namespace DofusSwap.Prefabs
             this.DragSelect.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.DragSelect.TabIndex = 5;
             this.DragSelect.TabStop = false;
-            this.DragSelect.DragDrop += new System.Windows.Forms.DragEventHandler(this.DragSelect_DragDrop);
             // 
             // ConfiguredCharacterName
             // 
