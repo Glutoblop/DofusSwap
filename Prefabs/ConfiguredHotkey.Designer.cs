@@ -40,7 +40,7 @@ namespace DofusSwap.Prefabs
             this.CharacterHotkeyButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CharacterHotkeyButton.Location = new System.Drawing.Point(3, 8);
             this.CharacterHotkeyButton.Name = "CharacterHotkeyButton";
-            this.CharacterHotkeyButton.Size = new System.Drawing.Size(69, 29);
+            this.CharacterHotkeyButton.Size = new System.Drawing.Size(122, 29);
             this.CharacterHotkeyButton.TabIndex = 7;
             this.CharacterHotkeyButton.Text = "[HOT_KEY]";
             this.CharacterHotkeyButton.UseVisualStyleBackColor = true;
@@ -48,7 +48,7 @@ namespace DofusSwap.Prefabs
             // 
             // RemoveCharacterButton
             // 
-            this.RemoveCharacterButton.Location = new System.Drawing.Point(196, 8);
+            this.RemoveCharacterButton.Location = new System.Drawing.Point(249, 8);
             this.RemoveCharacterButton.Name = "RemoveCharacterButton";
             this.RemoveCharacterButton.Size = new System.Drawing.Size(32, 29);
             this.RemoveCharacterButton.TabIndex = 8;
@@ -59,7 +59,7 @@ namespace DofusSwap.Prefabs
             // ShiftOn
             // 
             this.ShiftOn.AutoSize = true;
-            this.ShiftOn.Location = new System.Drawing.Point(78, 15);
+            this.ShiftOn.Location = new System.Drawing.Point(131, 15);
             this.ShiftOn.Name = "ShiftOn";
             this.ShiftOn.Size = new System.Drawing.Size(47, 17);
             this.ShiftOn.TabIndex = 9;
@@ -69,7 +69,7 @@ namespace DofusSwap.Prefabs
             // ControlOn
             // 
             this.ControlOn.AutoSize = true;
-            this.ControlOn.Location = new System.Drawing.Point(131, 15);
+            this.ControlOn.Location = new System.Drawing.Point(184, 15);
             this.ControlOn.Name = "ControlOn";
             this.ControlOn.Size = new System.Drawing.Size(59, 17);
             this.ControlOn.TabIndex = 10;
@@ -85,7 +85,7 @@ namespace DofusSwap.Prefabs
             this.Controls.Add(this.CharacterHotkeyButton);
             this.Controls.Add(this.RemoveCharacterButton);
             this.Name = "ConfiguredHotkey";
-            this.Size = new System.Drawing.Size(236, 45);
+            this.Size = new System.Drawing.Size(284, 45);
             this.ResumeLayout(false);
             this.PerformLayout();
 
