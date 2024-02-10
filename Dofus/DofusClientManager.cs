@@ -89,26 +89,24 @@ namespace DofusSwap.Dofus
                 clientData = GetClient(keyPressed, out clientProcess);
             }
 
-            if (clientData != null)
-            {
-                //Simualte alt key down
-                //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
-                keybd_event(0x12,0xb8,0 , 0);
+            if (clientData == null) return false;
 
-                SetForegroundWindow(clientProcess.MainWindowHandle);
-                SwitchToThisWindow(clientProcess.MainWindowHandle, true);
-                BringWindowToTop(clientProcess.MainWindowHandle);
+            //Simualte alt key down
+            //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
+            keybd_event(0x12,0xb8,0 , 0);
 
-                // Simulate a key release
-                //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
-                keybd_event(0x12,0xb8,0x0002,0);
+            SetForegroundWindow(clientProcess.MainWindowHandle);
+            SwitchToThisWindow(clientProcess.MainWindowHandle, true);
+            BringWindowToTop(clientProcess.MainWindowHandle);
 
-                //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
+            // Simulate a key release
+            //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
+            keybd_event(0x12,0xb8,0x0002,0);
 
-                return true;
-            }
+            //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
 
-            return false;
+            return true;
+
         }
 
         private void RefreshProcessList()

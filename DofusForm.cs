@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace DofusSwap
@@ -22,6 +23,8 @@ namespace DofusSwap
 
         private int _FocusedIndex = 0;
 
+        private Dictionary<Keys, bool> _KeyDown = new Dictionary<Keys, bool>();
+
         public DofusForm()
         {
             _Initialising = true;
@@ -31,6 +34,7 @@ namespace DofusSwap
 
             _KeyboardManager = new KeyboardManager();
             _KeyboardManager.OnKeyPressed += OnKeyboardHookPress;
+            _KeyboardManager.OnKeyReleased += OnKeyboardHookReleased;
 
             _DofusClientManager = new DofusClientManager();
 
@@ -48,7 +52,13 @@ namespace DofusSwap
 
             foreach (var client in _DofusClientManager.Clients)
             {
-                AddCharacter(client.name, client.KeyBind);
+                AddCharacter(client.name, client.KeyBind, client.shift, client.control);
+            }
+
+            foreach (Keys key in Enum.GetValues(typeof(Keys)).OfType<Keys>())
+            {
+                if (_KeyDown.ContainsKey(key)) continue;
+                _KeyDown.Add(key,false);
             }
 
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -59,7 +69,7 @@ namespace DofusSwap
             _Initialising = false;
         }
 
-        private void AddCharacter(string displayName, Keys key)
+        private void AddCharacter(string displayName, Keys key, bool shift, bool control)
         {
             // --- ADD CHARACTER
             var configuredCharacter = new ConfiguredCharacterName();
@@ -111,6 +121,8 @@ namespace DofusSwap
             // --- ADD HOTKEY
 
             var hotkey = new ConfiguredHotkey();
+            hotkey.SetRequireShift(shift);
+            hotkey.SetRequireControl(control);
             hotkey.SetHotkey(key);
             hotkey.Location = new Point(0, _ActiveHotkeys.Count * configuredCharacter.Size.Height);
             
@@ -146,7 +158,9 @@ namespace DofusSwap
                 {
                     KeyBind = hotkey.Key,
                     key = hotkey.Key.ToString(),
-                    name = activeCharacter.DisplayName
+                    shift = hotkey.RequireShift,
+                    control = hotkey.RequireControl,
+                    name = activeCharacter.DisplayName,
                 });
             }
 
@@ -177,11 +191,13 @@ namespace DofusSwap
 
         private void OnKeyboardHookPress(Keys key)
         {
+            if (_KeyDown[key]) return;
+            _KeyDown[key] = true;
+
             if (Visible)
             {
-                for (var index = 0; index < _ActiveHotkeys.Count; index++)
+                foreach (var hotkey in _ActiveHotkeys)
                 {
-                    var hotkey = _ActiveHotkeys[index];
                     if (hotkey.OnKeyPressed(key))
                     {
                         break;
@@ -190,10 +206,49 @@ namespace DofusSwap
             }
             else
             {
-                Console.WriteLine($"Key pressed: {key}");
+                var shift = _KeyDown[Keys.Shift] || _KeyDown[Keys.ShiftKey] || _KeyDown[Keys.LShiftKey] ||
+                            _KeyDown[Keys.RShiftKey];
+                var control = _KeyDown[Keys.Control] || _KeyDown[Keys.ControlKey] || _KeyDown[Keys.LControlKey] || _KeyDown[Keys.RControlKey];
+
+                foreach (var hotkey in _ActiveHotkeys)
+                {
+                    if (hotkey.Key != key) continue;
+
+                    if (hotkey.RequireShift && !shift)
+                    {
+#if DEBUG
+                        Console.WriteLine($"Key pressed: {key} but required Shift and not pressed");
+#endif
+                        return;
+                    }
+
+                    if (hotkey.RequireControl && !control)
+                    {
+#if DEBUG
+                        Console.WriteLine($"Key pressed: {key} but required Control and not pressed");
+#endif
+                        return;
+                    }
+                }
+
+                
                 _DofusClientManager.HandleKeyDown(key);
 
             }
+
+#if DEBUG
+            Console.WriteLine($"Key pressed: {key}");
+#endif
+        }
+
+        private void OnKeyboardHookReleased(Keys key)
+        {
+            if (!_KeyDown[key]) return;
+
+#if DEBUG
+            Console.WriteLine($"Key released: {key}");
+#endif
+            _KeyDown[key] = false;
         }
 
 
@@ -216,7 +271,7 @@ namespace DofusSwap
         private void AddCharacterButton_Click(object sender, EventArgs e)
         {
             if (_ActiveCharacters.Count == 8) return;
-            AddCharacter("", Keys.None);
+            AddCharacter("", Keys.None, false, false);
         }
 
         private void DofusForm_Load(object sender, EventArgs e)
@@ -273,5 +328,6 @@ namespace DofusSwap
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
+
     }
 }

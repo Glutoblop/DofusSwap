@@ -8,6 +8,8 @@ namespace DofusSwap.Dofus
     {
         public string name;
         public string key;
+        public bool shift;
+        public bool control;
 
         public Keys KeyBind { get; set; }
     }

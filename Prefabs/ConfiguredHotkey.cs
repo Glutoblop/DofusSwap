@@ -11,6 +11,11 @@ namespace DofusSwap.Prefabs
 
         public Keys Key => Enum.TryParse(CharacterHotkeyButton.Text, true, out Keys key) ? key : Keys.None;
 
+        public bool RequireShift => ShiftOn.Checked;
+        public void SetRequireShift(bool require) => ShiftOn.Checked = require;
+        public bool RequireControl => ControlOn.Checked;
+        public void SetRequireControl(bool require) => ControlOn.Checked = require;
+
         private bool _WaitingForKeyPress = false;
         private Keys _Keyhit = Keys.None;
 

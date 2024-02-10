@@ -103,10 +103,13 @@ namespace DofusSwap
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.AddCharacterButton);
             this.Controls.Add(this.menuStrip1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximizeBox = false;
             this.Name = "DofusForm";
             this.Text = "DofusSwap";
+            this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DofusForm_FormClosing);
             this.Load += new System.EventHandler(this.DofusForm_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.DofusForm_KeyDown);

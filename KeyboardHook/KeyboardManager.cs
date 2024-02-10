@@ -24,8 +24,9 @@ namespace DofusSwap.KeyboardHook
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        const int WH_KEYBOARD_LL = 13; // Номер глобального LowLevel-хука на клавиатуру
-        const int WM_KEYDOWN = 0x100; // Сообщения нажатия клавиши
+        const int WH_KEYBOARD_LL = 13;
+        const int WM_KEYDOWN = 0x100;
+        const int WM_KEYUP = 0x101;
 
         private IntPtr _WindowsHookEx = IntPtr.Zero;
 
@@ -44,20 +45,27 @@ namespace DofusSwap.KeyboardHook
 
         public IntPtr KeyboardHookProc(int code, IntPtr wParam, IntPtr lParam)
         {
-            if (code >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            switch (code >= 0)
             {
-                var key = (Keys)Marshal.ReadInt32(lParam);
-                OnKeyPressed?.Invoke(key);
+                case true when wParam == (IntPtr)WM_KEYDOWN:
+                {
+                    var key = (Keys)Marshal.ReadInt32(lParam);
+                    OnKeyPressed?.Invoke(key);
+                    break;
+                }
+                case true when wParam == (IntPtr)WM_KEYUP:
+                {
+                    var key = (Keys)Marshal.ReadInt32(lParam);
+                    OnKeyReleased?.Invoke(key);
+                    break;
+                }
+            }
 
-                return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
-            }
-            else
-            {
-                return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
-            }
+            return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
         }
 
         public event Action<Keys> OnKeyPressed;
+        public event Action<Keys> OnKeyReleased;
         
         public KeyboardManager()
         {
