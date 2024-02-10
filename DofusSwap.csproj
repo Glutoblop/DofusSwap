@@ -29,8 +29,8 @@
     <PublisherName>Glutoblop</PublisherName>
     <SuiteName>DofusSwap</SuiteName>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>25</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>27</ApplicationRevision>
+    <ApplicationVersion>1.0.0.27</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
