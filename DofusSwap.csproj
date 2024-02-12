@@ -13,7 +13,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>false</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\Work\Tools\dofusswap\publish\</PublishUrl>
+    <PublishUrl>D:\Work\Tools\dofusswap\publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -28,7 +28,6 @@
     <ProductName>Dofus Swap</ProductName>
     <PublisherName>Glutoblop</PublisherName>
     <SuiteName>DofusSwap</SuiteName>
-    <AutorunEnabled>true</AutorunEnabled>
     <ApplicationRevision>28</ApplicationRevision>
     <ApplicationVersion>1.0.0.28</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
