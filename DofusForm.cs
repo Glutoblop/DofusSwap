@@ -71,14 +71,12 @@ namespace DofusSwap
             Text = Format(Resources.title_name, GetVersionString());
 
             _Initialising = false;
-
-            CheckForUpdate();
         }
 
         private string GetVersionString()
         {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             return fvi.FileVersion;
         }
 
@@ -313,7 +311,7 @@ namespace DofusSwap
             {
                 var dir = new FileInfo(DofusClientManager.CONFIG_FILE_PATH);
 
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                Process.Start(new ProcessStartInfo()
                 {
                     FileName = dir.DirectoryName,
                     UseShellExecute = true,
@@ -364,7 +362,7 @@ namespace DofusSwap
                 var currentVersionStr = GetVersionString();
                 string latestVersionStr = "";
 
-                var versionUrl = String.Format(Resources.update_url, currentVersionStr);
+                var versionUrl = Format(Resources.update_url, currentVersionStr);
 
                 var client = new WebClient();
                 latestVersionStr = await client.DownloadStringTaskAsync(versionUrl);
@@ -372,14 +370,18 @@ namespace DofusSwap
                 if (!Version.TryParse(currentVersionStr, out Version currentVersion)) return;
                 if (!Version.TryParse(latestVersionStr, out Version latestVersion)) return;
 
-                //if (currentVersion >= latestVersion) return;
+                if (currentVersion >= latestVersion)
+                {
+                    MessageBox.Show("No update available", "DofusSwap");
+                    return;
+                }
 
                 var dialogResult = MessageBox.Show($"Update {latestVersion} available, do you want to install it?", "DofusSwap",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
 
                 if (dialogResult == DialogResult.Yes)
                 {
-                    var downloadUrl = String.Format(Resources.download_url, latestVersionStr);
+                    var downloadUrl = Format(Resources.download_url, latestVersionStr);
                     var zipData = await client.DownloadDataTaskAsync(downloadUrl);
 
                     var zip_path = Format(Resources.zip_download_path, GetDownloadFolderPath(), latestVersionStr);
@@ -395,11 +397,8 @@ namespace DofusSwap
 
                     ZipFile.ExtractToDirectory(zip_file_path, zip_path);
 
-                    //Auto run the setup
-                    Process.Start($"{zip_path}\\SetupDofusSwap.exe");
-
-                    //Open explorer to the file
-                    //Process.Start("explorer.exe",$"{zip_path}");
+                    //Auto run the application
+                    Process.Start($"{zip_path}\\DofusSwap.application");
 
                 }
             }
@@ -412,7 +411,7 @@ namespace DofusSwap
 
         string GetDownloadFolderPath() 
         {
-            return Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "{374DE290-123F-4565-9164-39C4925E467B}", String.Empty).ToString();
+            return Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders", "{374DE290-123F-4565-9164-39C4925E467B}", Empty).ToString();
         }
 
         public static void RecursiveDelete(DirectoryInfo baseDir)
