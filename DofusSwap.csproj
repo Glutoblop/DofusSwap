@@ -28,8 +28,10 @@
     <ProductName>Dofus Swap</ProductName>
     <PublisherName>Glutoblop</PublisherName>
     <SuiteName>DofusSwap</SuiteName>
-    <ApplicationRevision>28</ApplicationRevision>
-    <ApplicationVersion>1.0.0.28</ApplicationVersion>
+    <WebPage>publish.htm</WebPage>
+    <AutorunEnabled>true</AutorunEnabled>
+    <ApplicationRevision>30</ApplicationRevision>
+    <ApplicationVersion>1.0.0.30</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
