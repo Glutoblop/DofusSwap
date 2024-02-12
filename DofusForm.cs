@@ -273,6 +273,7 @@ namespace DofusSwap
         {
             base.OnDeactivate(e);
             _TrayManager.VisibilityChanged(Visible = false);
+            _DofusClientManager.RefreshProcessList();
         }
 
         #endregion

@@ -109,8 +109,10 @@ namespace DofusSwap.Dofus
 
         }
 
-        private void RefreshProcessList()
+        public void RefreshProcessList()
         {
+            if (Clients == null) return;
+
             _DofusProcesses = new List<Process>();
 
             var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"))
