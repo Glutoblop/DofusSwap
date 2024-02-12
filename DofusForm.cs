@@ -135,6 +135,15 @@ namespace DofusSwap
                 var character = _ActiveCharacters[index];
                 _ActiveCharacters.RemoveAt(index);
                 ActiveCharacters.Controls.Remove(character);
+
+                for (var i = 0; i < _ActiveCharacters.Count; i++)
+                {
+                    var activeChar = _ActiveCharacters[i];
+                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                    activeChar.UpdateIndex();
+
+                    _ActiveHotkeys[i].Location = new Point(0, i * configuredCharacter.Size.Height);
+                }
             };
             _ActiveHotkeys.Add(hotkey);
             ActiveHotkeys.Controls.Add(hotkey);
