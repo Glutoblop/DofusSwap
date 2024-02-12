@@ -8,12 +8,18 @@ https://github.com/Glutoblop/DofusSwap
 
 ### Disclaimer
 
-    From what I can tell Ankama does not have a proceedure  
-    to be able to confirm if a desktop application is or isn't against  
-    their terms of service.  
+    From what I can tell Ankama does not have a procedure
+    to be able to confirm if a desktop application is or isn't
+    against their terms of service.  
+    
+    This program only provides hotkeys which simulate the behaviour  
+    of Alt+Tab'ing, however I cannot guarentee  
+    Ankama would not disagree.  
       
-    Because of this, you are using this application at your own risk.  
+    Because of this, you are using this application at your own
+    risk.  
    
+
 ## How it works
 This is a very simple WinForms app which uses [Win32 hooks](https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keyup) to detect key presses, and will check against those key presses to see if they they match your registered hotkeys.  
 If it does, it will consume this keypress and find the Dofus windows process running, and essentially Alt + Tab into that window for you by using virtual keys to pretend to pressing Alt + Tab.  
