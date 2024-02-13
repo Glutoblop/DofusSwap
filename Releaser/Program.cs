@@ -98,6 +98,13 @@ namespace Releaser
 
             using (var repo = new Repository(solutionDirectory))
             {
+                //if (repo.Head.FriendlyName != "master")
+                //{
+                //    Console.WriteLine($"Required to be on 'master' branch, cannot version on branch '{repo.Head.FriendlyName}'");
+                //    Console.ReadLine();
+                //    return;
+                //}
+
                 var status = repo.RetrieveStatus(new StatusOptions());
 
                 foreach (var statusEntry in status.Modified)
@@ -112,6 +119,18 @@ namespace Releaser
 
                 // Commit to the repository
                 Commit commit = repo.Commit($"Version {newVersion}", author, committer);
+
+                Tag t = repo.ApplyTag($"{newVersion}",commit.Sha);
+
+                var botCreds = File.ReadAllLines($"{solutionDirectory}\\bot_creds.txt");
+
+                Remote remote = repo.Network.Remotes["origin"];
+                var options = new PushOptions();
+                options.CredentialsProvider = (_url, _user, _cred) => 
+                    new UsernamePasswordCredentials { Username = botCreds[0], Password = botCreds[1] };
+                repo.Network.Push(remote, @"refs/heads/master", options);
+
+                repo.Network.Push(repo.Network.Remotes["origin"], $"refs/tags/{newVersion}", options);
             }
 
             Console.WriteLine("DofusSwap Built");
