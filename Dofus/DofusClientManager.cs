@@ -35,14 +35,17 @@ namespace DofusSwap.Dofus
 
         public void Init()
         {
-            CONFIG_FILE_PATH = "dofusclients.json";
-#if !DEBUG
             CONFIG_FILE_PATH = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
-#endif
 
-            if (!File.Exists(CONFIG_FILE_PATH)) File.CreateText(CONFIG_FILE_PATH);
+            if (!File.Exists(CONFIG_FILE_PATH))
+            {
+                using (File.CreateText(CONFIG_FILE_PATH))
+                {
+                }
+            }
 
             RefreshConfig();
+            UpdateConfig(Clients);
             RefreshProcessList();
         }
 
@@ -58,7 +61,7 @@ namespace DofusSwap.Dofus
         public void RefreshConfig()
         {
             var clientConfig = File.ReadAllText(CONFIG_FILE_PATH);
-            Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig);
+            Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig) ?? new List<DofusClientData>();
 
             foreach (var dofusClient in Clients)
                 dofusClient.KeyBind = Enum.TryParse(dofusClient.key, true, out Keys key) ? key : Keys.None;
