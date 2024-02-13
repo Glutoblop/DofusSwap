@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using DofusSwap.Properties;
+using System.Resources.Extensions;
 
 namespace DofusSwap
 {
