@@ -261,7 +261,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tray\TrayManager.cs" />
-    <Content Include="Swords.ico" />
     <EmbeddedResource Include="DofusForm.resx">
       <DependentUpon>DofusForm.cs</DependentUpon>
     </EmbeddedResource>
