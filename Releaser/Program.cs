@@ -4,6 +4,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http.Headers;
+using LibGit2Sharp;
+using Version = System.Version;
 
 namespace Releaser
 {
@@ -92,7 +94,27 @@ namespace Releaser
 
             // --- Commit and push this new version to master
 
+            var solutionDirectory = $"{Directory.GetCurrentDirectory()}\\..";
 
+            using (var repo = new Repository(solutionDirectory))
+            {
+                var status = repo.RetrieveStatus(new StatusOptions());
+
+                foreach (var statusEntry in status.Modified)
+                {
+                    repo.Index.Add(statusEntry.FilePath);
+                    repo.Index.Write();
+                }
+
+                // Create the committer's signature and commit
+                Signature author = new Signature("Releaser", "@Releaser", DateTime.Now);
+                Signature committer = author;
+
+                // Commit to the repository
+                Commit commit = repo.Commit($"Version {newVersion}", author, committer);
+            }
+
+            Console.WriteLine("DofusSwap Built");
         }
     }
 }
