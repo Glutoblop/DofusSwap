@@ -113,7 +113,7 @@ namespace Releaser
                     repo.Index.Write();
                 }
 
-                foreach (var statusEntry in status.Added)
+                foreach (var statusEntry in status.Untracked)
                 {
                     repo.Index.Add(statusEntry.FilePath);
                     repo.Index.Write();
