@@ -193,7 +193,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).exe" "$(SolutionDir)\Scripts\$(ProjectName).exe"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).exe" "$(SolutionDir)\Scripts\$(ProjectName).exe"
+copy /Y "$(TargetDir)lib\win32\x86\git2-a2bde63.dll" "$(SolutionDir)\Scripts\git2-a2bde63.dll"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

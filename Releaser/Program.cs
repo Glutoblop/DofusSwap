@@ -113,6 +113,12 @@ namespace Releaser
                     repo.Index.Write();
                 }
 
+                foreach (var statusEntry in status.Added)
+                {
+                    repo.Index.Add(statusEntry.FilePath);
+                    repo.Index.Write();
+                }
+
                 // Create the committer's signature and commit
                 Signature author = new Signature("Releaser", "@Releaser", DateTime.Now);
                 Signature committer = author;
