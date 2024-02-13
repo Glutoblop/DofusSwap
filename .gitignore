@@ -360,4 +360,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/Scripts/bot_creds.txt
+/bot_creds.txt

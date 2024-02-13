@@ -98,12 +98,12 @@ namespace Releaser
 
             using (var repo = new Repository(solutionDirectory))
             {
-                //if (repo.Head.FriendlyName != "master")
-                //{
-                //    Console.WriteLine($"Required to be on 'master' branch, cannot version on branch '{repo.Head.FriendlyName}'");
-                //    Console.ReadLine();
-                //    return;
-                //}
+                if (repo.Head.FriendlyName != "master")
+                {
+                    Console.WriteLine($"Required to be on 'master' branch, cannot version on branch '{repo.Head.FriendlyName}'");
+                    Console.ReadLine();
+                    return;
+                }
 
                 var status = repo.RetrieveStatus(new StatusOptions());
 
