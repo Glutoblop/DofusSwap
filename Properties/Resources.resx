@@ -121,4 +121,16 @@
   <data name="SwordsIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icon\Swords.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+    <data name="download_url" xml:space="preserve">
+    <value>https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_{0}.zip</value>
+  </data>
+  <data name="title_name" xml:space="preserve">
+    <value>Version - {0}</value>
+  </data>
+  <data name="update_url" xml:space="preserve">
+    <value>https://raw.github.com/Glutoblop/DofusSwap/master/latest_version.txt</value>
+  </data>
+  <data name="zip_download_path" xml:space="preserve">
+    <value>{0}\dofusswap_{1}</value>
+  </data>
 </root>

@@ -61,12 +61,48 @@ namespace DofusSwap.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_{0}.zip.
+        /// </summary>
+        internal static string download_url {
+            get {
+                return ResourceManager.GetString("download_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon SwordsIcon {
             get {
                 object obj = ResourceManager.GetObject("SwordsIcon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version - {0}.
+        /// </summary>
+        internal static string title_name {
+            get {
+                return ResourceManager.GetString("title_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://raw.github.com/Glutoblop/DofusSwap/master/latest_version.txt.
+        /// </summary>
+        internal static string update_url {
+            get {
+                return ResourceManager.GetString("update_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}\dofusswap_{1}.
+        /// </summary>
+        internal static string zip_download_path {
+            get {
+                return ResourceManager.GetString("zip_download_path", resourceCulture);
             }
         }
     }
