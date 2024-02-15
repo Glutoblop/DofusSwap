@@ -282,6 +282,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tray\TrayManager.cs" />
+    <Compile Include="Updater\CmdUpdater.cs" />
     <EmbeddedResource Include="DofusForm.resx">
       <DependentUpon>DofusForm.cs</DependentUpon>
     </EmbeddedResource>

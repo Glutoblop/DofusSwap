@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows.Forms;
 using DofusSwap.Properties;
 using System.Resources.Extensions;
+using System.Threading.Tasks;
 
 namespace DofusSwap
 {
@@ -341,5 +342,9 @@ namespace DofusSwap
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        private void updateToolStripMenuItem_ClickAsync(object sender, EventArgs e)
+        {
+            new Updater.CmdUpdater().CheckForUpdate();
+        }
     }
 }
