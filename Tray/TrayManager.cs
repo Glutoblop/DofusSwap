@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 using DofusSwap.Properties;
 
@@ -40,6 +38,9 @@ namespace DofusSwap.Tray
 
         private void ToggleVisibility(object sender, EventArgs e)
         {
+            if (!(e is MouseEventArgs me)) return;
+            if (me.Button != MouseButtons.Left) return;
+
             _Visible = !_Visible;
             OnVisbilityToggled?.Invoke(_Visible);
         }
