@@ -1,4 +1,4 @@
-﻿# Dofus Swap Multi-Account Helper <img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Icon/Swords.png" width=50 height=50/>
+# Dofus Swap Multi-Account Helper <img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Icon/Swords.png" width=50 height=50/>
   
 ### Disclaimer
 
@@ -13,7 +13,7 @@
     Because of this, you are using this application at your own
     risk.  
  
-[<img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Wiki/res/download_here.png" width=600>](https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_1.1.1.zip)
+[<img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Wiki/res/download_here.png" width=600>](https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_1.1.2.zip)
 
 The full source of this application is available under MIT License: 
 https://github.com/Glutoblop/DofusSwap     
