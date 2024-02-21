@@ -11,9 +11,19 @@ namespace DofusSwap
         [STAThread]
         static void Main()
         {
+            var mutex = new System.Threading.Mutex(true, "DofusSwap", out var result);
+
+            if (!result)
+            {
+                MessageBox.Show("Another instance is already running.");
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new DofusForm());
+
+            GC.KeepAlive(mutex); 
         }
     }
 }
