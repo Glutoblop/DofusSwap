@@ -301,10 +301,6 @@
     <Content Include="dofusclients.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="dofusswap_signing_key.pfx" />
-    <Content Include="FodyWeavers.xsd">
-      <SubType>Designer</SubType>
-    </Content>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
