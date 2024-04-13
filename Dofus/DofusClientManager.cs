@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace DofusSwap.Dofus
@@ -101,6 +102,10 @@ namespace DofusSwap.Dofus
             SetForegroundWindow(clientProcess.MainWindowHandle);
             SwitchToThisWindow(clientProcess.MainWindowHandle, true);
             BringWindowToTop(clientProcess.MainWindowHandle);
+            
+            //BUG - Sometimes when PC running slow it will not perform this step
+            //BUG - This means you could have Alt continued to be pressed, and if a hotkey is F4 then it'll close the window.
+            Thread.Sleep(250);
 
             // Simulate a key release
             //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
