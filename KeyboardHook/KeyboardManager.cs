@@ -51,19 +51,17 @@ namespace DofusSwap.KeyboardHook
                 {
                     var key = (Keys)Marshal.ReadInt32(lParam);
                     OnKeyPressed?.Invoke(key);
-                    OnKeyReleased?.Invoke(key);
                     break;
                 }
                 case true when wParam == (IntPtr)WM_KEYUP:
                 {
                     var key = (Keys)Marshal.ReadInt32(lParam);
-                    //OnKeyReleased?.Invoke(key);
+                    OnKeyReleased?.Invoke(key);
                     break;
                 }
             }
-
-            return IntPtr.Zero;
-            //return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
+            
+            return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
         }
 
         public event Action<Keys> OnKeyPressed;
