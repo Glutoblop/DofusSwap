@@ -74,15 +74,15 @@ namespace Releaser
             var exeDirectory = $"{Directory.GetCurrentDirectory()}\\..\\bin\\Release";
 
             var releaseFolder = new DirectoryInfo(exeDirectory);
-            var releaseFiles = releaseFolder.GetFiles().ToList();
 
-            for (var i = releaseFiles.Count - 1; i >= 0; i--)
-            {
-                var releaseFile = releaseFiles[i];
-                if (releaseFile.Name == "DofusSwap.exe") continue;
-                File.Delete(releaseFile.FullName);
-                releaseFiles.RemoveAt(i);
-            }
+            //var releaseFiles = releaseFolder.GetFiles().ToList();
+            //for (var i = releaseFiles.Count - 1; i >= 0; i--)
+            //{
+            //    var releaseFile = releaseFiles[i];
+            //    if (releaseFile.Name == "DofusSwap.exe") continue;
+            //    File.Delete(releaseFile.FullName);
+            //    releaseFiles.RemoveAt(i);
+            //}
 
             Console.WriteLine("bin/Release prepared for zip");
 
