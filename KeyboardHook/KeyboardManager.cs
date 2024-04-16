@@ -32,6 +32,8 @@ namespace DofusSwap.KeyboardHook
 
         private LowLevelKeyboardProc _KeyboardProc;// = KeyboardHookProc;
 
+        public bool ConsumeAlt = false;
+
         public void SetHook()
         {
             IntPtr hInstance = LoadLibrary("User32");
@@ -45,18 +47,32 @@ namespace DofusSwap.KeyboardHook
 
         public IntPtr KeyboardHookProc(int code, IntPtr wParam, IntPtr lParam)
         {
+            //If alt is pressed, just consume it if you have a hotkey as F4 it can trigger alt+f4
+            if (ConsumeAlt && wParam == (IntPtr)0x0000000000000104)
+            {
+                return (IntPtr)1;
+            }
+
             switch (code >= 0)
             {
                 case true when wParam == (IntPtr)WM_KEYDOWN:
                 {
                     var key = (Keys)Marshal.ReadInt32(lParam);
-                    OnKeyPressed?.Invoke(key);
+                    if (OnKeyPressed?.Invoke(key) ?? false)
+                    {
+                        return (IntPtr)1;
+                    }
+
                     break;
                 }
                 case true when wParam == (IntPtr)WM_KEYUP:
                 {
                     var key = (Keys)Marshal.ReadInt32(lParam);
-                    OnKeyReleased?.Invoke(key);
+                    if (OnKeyReleased?.Invoke(key) ?? false)
+                    {
+                        return (IntPtr)1;
+                    }
+
                     break;
                 }
             }
@@ -64,8 +80,8 @@ namespace DofusSwap.KeyboardHook
             return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
         }
 
-        public event Action<Keys> OnKeyPressed;
-        public event Action<Keys> OnKeyReleased;
+        public event Func<Keys,bool> OnKeyPressed;
+        public event Func<Keys,bool> OnKeyReleased;
         
         public KeyboardManager()
         {
