@@ -104,6 +104,8 @@ namespace DofusSwap.Dofus
 
         public static string CONFIG_FILE_PATH = "";
 
+        public Action<bool> OnSimulatingAltIsPressed { get; set; }
+
         public void Init()
         {
             CONFIG_FILE_PATH = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
@@ -185,6 +187,7 @@ namespace DofusSwap.Dofus
                     }
                 }
             };
+            OnSimulatingAltIsPressed?.Invoke(true);
             SendInput((uint)altDown.Length, altDown, Marshal.SizeOf(typeof(Input)));
 
             SetForegroundWindow(clientProcess.MainWindowHandle);
@@ -212,6 +215,7 @@ namespace DofusSwap.Dofus
                 }
             };
             SendInput((uint)altUp.Length, altUp, Marshal.SizeOf(typeof(Input)));
+            OnSimulatingAltIsPressed?.Invoke(false);
 
             //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
 

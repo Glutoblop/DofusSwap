@@ -32,7 +32,7 @@ namespace DofusSwap.KeyboardHook
 
         private LowLevelKeyboardProc _KeyboardProc;// = KeyboardHookProc;
 
-        public bool ConsumeAlt = false;
+        public bool ConsumeAlt { get; set; } = false;
 
         public void SetHook()
         {
@@ -47,42 +47,44 @@ namespace DofusSwap.KeyboardHook
 
         public IntPtr KeyboardHookProc(int code, IntPtr wParam, IntPtr lParam)
         {
-            //If alt is pressed, just consume it if you have a hotkey as F4 it can trigger alt+f4
             if (ConsumeAlt && wParam == (IntPtr)0x0000000000000104)
             {
+#if DEBUG
+                Console.WriteLine("Simulated Alt Press Ignored and consumed.");
+#endif
                 return (IntPtr)1;
             }
 
             switch (code >= 0)
             {
                 case true when wParam == (IntPtr)WM_KEYDOWN:
-                {
-                    var key = (Keys)Marshal.ReadInt32(lParam);
-                    if (OnKeyPressed?.Invoke(key) ?? false)
                     {
-                        return (IntPtr)1;
-                    }
+                        var key = (Keys)Marshal.ReadInt32(lParam);
+                        if (OnKeyPressed?.Invoke(key) ?? false)
+                        {
+                            return (IntPtr)1;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
                 case true when wParam == (IntPtr)WM_KEYUP:
-                {
-                    var key = (Keys)Marshal.ReadInt32(lParam);
-                    if (OnKeyReleased?.Invoke(key) ?? false)
                     {
-                        return (IntPtr)1;
-                    }
+                        var key = (Keys)Marshal.ReadInt32(lParam);
+                        if (OnKeyReleased?.Invoke(key) ?? false)
+                        {
+                            return (IntPtr)1;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
             }
-            
+
             return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
         }
 
-        public event Func<Keys,bool> OnKeyPressed;
-        public event Func<Keys,bool> OnKeyReleased;
-        
+        public event Func<Keys, bool> OnKeyPressed;
+        public event Func<Keys, bool> OnKeyReleased;
+
         public KeyboardManager()
         {
             //Setup triggered windows hook

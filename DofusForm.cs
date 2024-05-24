@@ -37,6 +37,10 @@ namespace DofusSwap
             _KeyboardManager.OnKeyReleased += OnKeyboardHookReleased;
 
             _DofusClientManager = new DofusClientManager();
+            _DofusClientManager.OnSimulatingAltIsPressed += (simAltPressed) =>
+            {
+                _KeyboardManager.ConsumeAlt = simAltPressed;
+            };
 
             _TrayManager.Init();
             _DofusClientManager.Init();
@@ -55,8 +59,6 @@ namespace DofusSwap
                 AddCharacter(client.name, client.KeyBind, client.shift, client.control);
             }
 
-            CheckUseOfF4();
-
             foreach (Keys key in Enum.GetValues(typeof(Keys)).OfType<Keys>())
             {
                 if (_KeyDown.ContainsKey(key)) continue;
@@ -69,17 +71,6 @@ namespace DofusSwap
             Text = $"Dofus Swap - {version}";
 
             _Initialising = false;
-        }
-
-        private void CheckUseOfF4()
-        {
-            foreach (var client in _DofusClientManager.Clients)
-            {
-                if (client.KeyBind != Keys.F4) continue;
-                _KeyboardManager.ConsumeAlt = true;
-                return;
-            }
-            _KeyboardManager.ConsumeAlt = false;
         }
 
         private void AddCharacter(string displayName, Keys key, bool shift, bool control)
@@ -97,7 +88,6 @@ namespace DofusSwap
 
             configuredCharacter.OnModified += character =>
             {
-                CheckUseOfF4();
                 UpdateConfigs();
             };
 
@@ -142,7 +132,7 @@ namespace DofusSwap
 
             hotkey.OnModified += modifiedHotkey =>
             {
-                CheckUseOfF4();
+                //Ignored for now
             };
 
             hotkey.OnDeleted += deletedHotkey =>
@@ -219,18 +209,12 @@ namespace DofusSwap
 
         private bool OnKeyboardHookPress(Keys key)
         {
-            if (_KeyDown[key]) return false;
             _KeyDown[key] = true;
 
             if (Visible)
             {
-                foreach (var hotkey in _ActiveHotkeys)
-                {
-                    if (hotkey.OnKeyPressed(key))
-                    {
-                        break;
-                    }
-                }
+                //Don't need to do anything special here, want the keyboard to work as normal while the application is visible.
+                return false;
             }
             else
             {
@@ -267,13 +251,11 @@ namespace DofusSwap
 #if DEBUG
             Console.WriteLine($"Key pressed: {key}");
 #endif
-            return true;
+            return false;
         }
 
         private bool OnKeyboardHookReleased(Keys key)
         {
-            if (!_KeyDown[key]) return false;
-
 #if DEBUG
             Console.WriteLine($"Key released: {key}");
 #endif
