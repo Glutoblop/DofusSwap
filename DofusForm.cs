@@ -267,7 +267,7 @@ namespace DofusSwap
 #if DEBUG
             Console.WriteLine($"Key pressed: {key}");
 #endif
-            return false;
+            return true;
         }
 
         private bool OnKeyboardHookReleased(Keys key)
