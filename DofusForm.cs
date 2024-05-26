@@ -213,6 +213,14 @@ namespace DofusSwap
 
             if (Visible)
             {
+                foreach (var hotkey in _ActiveHotkeys)
+                {
+                    if (hotkey.OnKeyPressed(key))
+                    {
+                        break;
+                    }
+                }
+
                 //Don't need to do anything special here, want the keyboard to work as normal while the application is visible.
                 return false;
             }
