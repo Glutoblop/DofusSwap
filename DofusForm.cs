@@ -24,15 +24,16 @@ namespace DofusSwap
         private int _FocusedIndex = 0;
 
         private bool _AutoDetect = true;
-        private const string AutodetectTxt = "autodetect.txt";
-
+        private const string AutodetectPath = "autodetect.txt";
+        
         private Dictionary<Keys, bool> _KeyDown = new Dictionary<Keys, bool>();
 
         public DofusForm()
         {
             _Initialising = true;
-            if(!File.Exists(AutodetectTxt)) File.WriteAllText(AutodetectTxt, "true");
-            _AutoDetect = bool.Parse(File.ReadAllText(AutodetectTxt));
+
+            if(!File.Exists(AutodetectPath)) File.WriteAllText(AutodetectPath, "true");
+            _AutoDetect = bool.Parse(File.ReadAllText(AutodetectPath));
 
             _TrayManager = new TrayManager();
             _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisibilityToggled;
@@ -52,6 +53,18 @@ namespace DofusSwap
                 AddCharacter(dofusCharacterName,Keys.None, false, false);
             };
 
+            _DofusClientManager.OnClientFocused += (clientFocused) =>
+            {
+                //ignored
+            };
+
+            _DofusClientManager.OnNextHotkeySet += (nextHotkey) =>
+            {
+                NextCharacterHotkey.Text = nextHotkey == Keys.None ? "Next Char Hotkey" : $"[ {nextHotkey:G} ]";
+            };
+
+            InitializeComponent();
+
             _TrayManager.Init();
             _DofusClientManager.Init();
 
@@ -59,8 +72,6 @@ namespace DofusSwap
 
             Shown += OnShown;
             Closed += OnClosed;
-
-            InitializeComponent();
 
             UpdateAutodetect();
 
@@ -233,6 +244,11 @@ namespace DofusSwap
 
             if (Visible)
             {
+                if (_DofusClientManager.CheckNextHotkeyAssignment(key))
+                {
+                    return false;
+                }
+
                 foreach (var hotkey in _ActiveHotkeys)
                 {
                     if (hotkey.OnKeyPressed(key))
@@ -246,6 +262,11 @@ namespace DofusSwap
             }
             else
             {
+                if (_DofusClientManager.CheckNextHotkeyTrigger(key))
+                {
+                    return false;
+                }
+
                 var shift = _KeyDown[Keys.Shift] || _KeyDown[Keys.ShiftKey] || _KeyDown[Keys.LShiftKey] ||
                             _KeyDown[Keys.RShiftKey];
                 var control = _KeyDown[Keys.Control] || _KeyDown[Keys.ControlKey] || _KeyDown[Keys.LControlKey] || _KeyDown[Keys.RControlKey];
@@ -374,7 +395,7 @@ namespace DofusSwap
         private void autoDetectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _AutoDetect = !_AutoDetect;
-            File.WriteAllText(AutodetectTxt, _AutoDetect ? "true" : "false");
+            File.WriteAllText(AutodetectPath, _AutoDetect ? "true" : "false");
 
             UpdateAutodetect();
         }
@@ -383,6 +404,12 @@ namespace DofusSwap
         {
             AutoDetectMenuItem.Text = _AutoDetect ? "Auto Detecting" : "Manual Adding";
             _DofusClientManager.SetAutoDetecting(_AutoDetect);
+        }
+
+        private void NextCharacterHotkey_Click(object sender, EventArgs e)
+        {
+            NextCharacterHotkey.Text = $"Press Key..";
+            _DofusClientManager.StartAssignNextHotKey();
         }
     }
 }

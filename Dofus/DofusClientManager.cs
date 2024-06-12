@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -106,9 +105,17 @@ namespace DofusSwap.Dofus
 
         public static string CONFIG_FILE_PATH = "";
 
+        private bool _AwaitingNextHotkey = false;
+        private Keys _NextHotKey = Keys.None;
+        private Timer _NextHotkeyTimer;
+        private const string NextHotkeyPath = "nexthotkey.txt";
+        private int _NextCharIndex = 0;
+
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
 
         public Action<string> OnNewDofusClientDetected { get; set; }
+        public Action<DofusClientData> OnClientFocused { get; set; }
+        public Action<Keys> OnNextHotkeySet { get; set; }
 
         public void Init()
         {
@@ -120,6 +127,11 @@ namespace DofusSwap.Dofus
                 {
                 }
             }
+
+            if (!File.Exists(NextHotkeyPath)) File.WriteAllText(NextHotkeyPath, Keys.None.ToString());
+            _NextHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(NextHotkeyPath));
+
+            OnNextHotkeySet?.Invoke(_NextHotKey);
 
             RefreshConfig();
             UpdateConfig(Clients);
@@ -169,6 +181,11 @@ namespace DofusSwap.Dofus
                 if (!processName.Contains("dofus")) continue;
 
                 var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
+                //If it only says "dofus" then its a loading client, ignore it
+                if (windowTitleName == "dofus") continue;
+                
+                //If it only says "dofus [version number]" then its a client in character select, wait.
+                if(windowTitleName.StartsWith("dofus ")) continue;
 
                 bool newClientFound = true;
 
@@ -232,14 +249,23 @@ namespace DofusSwap.Dofus
         {
             //Find the process that matches the key press
             var clientData = GetClient(keyPressed, out var clientProcess);
-            if (clientData == null)
-            {
-                clientData = GetClient(keyPressed, out clientProcess);
-            }
-
             if (clientData == null) return false;
 
-            //OLD - Simualte alt key down
+            FocusProcessWindow(clientProcess);
+
+            _NextCharIndex = Clients.IndexOf(clientData);
+
+            OnClientFocused?.Invoke(clientData);
+
+            //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
+
+            return true;
+
+        }
+
+        private void FocusProcessWindow(Process clientProcess)
+        {
+            //OLD - Simulate alt key down
             //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
             //keybd_event(0x12,0xb8,0 , 0);
 
@@ -288,11 +314,66 @@ namespace DofusSwap.Dofus
             };
             SendInput((uint)altUp.Length, altUp, Marshal.SizeOf(typeof(Input)));
             OnSimulatingAltIsPressed?.Invoke(false);
+        }
 
-            //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
+        public bool CheckNextHotkeyAssignment(Keys key)
+        {
+            if (!_AwaitingNextHotkey)
+            {
+                return false;
+            }
+
+            _NextHotKey = key;
+
+            OnNextHotkeySet?.Invoke(_NextHotKey);
+
+            _NextHotkeyTimer.Stop();
+            _NextHotkeyTimer.Dispose();
+            _NextHotkeyTimer = null;
+
+            File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
+
+            _AwaitingNextHotkey = false;
 
             return true;
+        }
 
+        public bool CheckNextHotkeyTrigger(Keys key)
+        {
+            if (_NextHotKey != key) return false;
+
+            _NextCharIndex++;
+            if (_NextCharIndex >= Clients.Count) _NextCharIndex = 0;
+
+            var client = Clients[_NextCharIndex];
+
+            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            foreach (var process in processes)
+            {
+                if (!process.MainWindowTitle.StartsWith(client.name)) continue;
+
+                FocusProcessWindow(process);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void StartAssignNextHotKey()
+        {
+            _NextHotkeyTimer = new Timer();
+            _NextHotkeyTimer.Tick += (o, args) =>
+            {
+                OnNextHotkeySet?.Invoke(_NextHotKey);
+
+                _NextHotkeyTimer.Stop();
+                _NextHotkeyTimer = null;
+                _AwaitingNextHotkey = false;
+            };
+            _NextHotkeyTimer.Interval = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+            _NextHotkeyTimer.Start();
+
+            _AwaitingNextHotkey = true;
         }
     }
 }

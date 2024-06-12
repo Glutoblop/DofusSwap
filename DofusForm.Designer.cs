@@ -33,10 +33,11 @@ namespace DofusSwap
             this.AddCharacterButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.ConfigToolMenuStripItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AutoDetectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveButton = new System.Windows.Forms.Button();
             this.ActiveCharacters = new System.Windows.Forms.Panel();
             this.ActiveHotkeys = new System.Windows.Forms.Panel();
-            this.AutoDetectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NextCharacterHotkey = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,6 +71,13 @@ namespace DofusSwap
             this.ConfigToolMenuStripItem.Text = "Folder";
             this.ConfigToolMenuStripItem.Click += new System.EventHandler(this.ConfigToolStrip_OnClick);
             // 
+            // AutoDetectMenuItem
+            // 
+            this.AutoDetectMenuItem.Name = "AutoDetectMenuItem";
+            this.AutoDetectMenuItem.Size = new System.Drawing.Size(82, 22);
+            this.AutoDetectMenuItem.Text = "Auto Detect";
+            this.AutoDetectMenuItem.Click += new System.EventHandler(this.autoDetectToolStripMenuItem_Click);
+            // 
             // SaveButton
             // 
             this.SaveButton.Location = new System.Drawing.Point(486, 27);
@@ -94,12 +102,15 @@ namespace DofusSwap
             this.ActiveHotkeys.Size = new System.Drawing.Size(280, 430);
             this.ActiveHotkeys.TabIndex = 6;
             // 
-            // AutoDetectMenuItem
+            // NextCharacterHotkey
             // 
-            this.AutoDetectMenuItem.Name = "AutoDetectMenuItem";
-            this.AutoDetectMenuItem.Size = new System.Drawing.Size(82, 22);
-            this.AutoDetectMenuItem.Text = "Auto Detect";
-            this.AutoDetectMenuItem.Click += new System.EventHandler(this.autoDetectToolStripMenuItem_Click);
+            this.NextCharacterHotkey.Location = new System.Drawing.Point(256, 27);
+            this.NextCharacterHotkey.Name = "NextCharacterHotkey";
+            this.NextCharacterHotkey.Size = new System.Drawing.Size(78, 36);
+            this.NextCharacterHotkey.TabIndex = 8;
+            this.NextCharacterHotkey.Text = "Next Char Hotkey";
+            this.NextCharacterHotkey.UseVisualStyleBackColor = true;
+            this.NextCharacterHotkey.Click += new System.EventHandler(this.NextCharacterHotkey_Click);
             // 
             // DofusForm
             // 
@@ -107,6 +118,7 @@ namespace DofusSwap
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(604, 511);
+            this.Controls.Add(this.NextCharacterHotkey);
             this.Controls.Add(this.ActiveHotkeys);
             this.Controls.Add(this.ActiveCharacters);
             this.Controls.Add(this.SaveButton);
@@ -137,6 +149,7 @@ namespace DofusSwap
         private System.Windows.Forms.Panel ActiveCharacters;
         private System.Windows.Forms.Panel ActiveHotkeys;
         private System.Windows.Forms.ToolStripMenuItem AutoDetectMenuItem;
+        private System.Windows.Forms.Button NextCharacterHotkey;
     }
 }
 
