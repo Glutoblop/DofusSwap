@@ -23,11 +23,16 @@ namespace DofusSwap
 
         private int _FocusedIndex = 0;
 
+        private bool _AutoDetect = true;
+        private const string AutodetectTxt = "autodetect.txt";
+
         private Dictionary<Keys, bool> _KeyDown = new Dictionary<Keys, bool>();
 
         public DofusForm()
         {
             _Initialising = true;
+            if(!File.Exists(AutodetectTxt)) File.WriteAllText(AutodetectTxt, "true");
+            _AutoDetect = bool.Parse(File.ReadAllText(AutodetectTxt));
 
             _TrayManager = new TrayManager();
             _TrayManager.OnVisbilityToggled += TrayManagerOnOnVisibilityToggled;
@@ -42,6 +47,11 @@ namespace DofusSwap
                 _KeyboardManager.ConsumeAlt = simAltPressed;
             };
 
+            _DofusClientManager.OnNewDofusClientDetected += (dofusCharacterName) =>
+            {
+                AddCharacter(dofusCharacterName,Keys.None, false, false);
+            };
+
             _TrayManager.Init();
             _DofusClientManager.Init();
 
@@ -51,6 +61,8 @@ namespace DofusSwap
             Closed += OnClosed;
 
             InitializeComponent();
+
+            UpdateAutodetect();
 
             _DofusClientManager.RefreshConfig();
 
@@ -71,6 +83,12 @@ namespace DofusSwap
             Text = $"Dofus Swap - {version}";
 
             _Initialising = false;
+        }
+
+        public sealed override string Text
+        {
+            get { return base.Text; }
+            set { base.Text = value; }
         }
 
         private void AddCharacter(string displayName, Keys key, bool shift, bool control)
@@ -153,6 +171,8 @@ namespace DofusSwap
 
                     _ActiveHotkeys[i].Location = new Point(0, i * configuredCharacter.Size.Height);
                 }
+
+                UpdateConfigs();
             };
             _ActiveHotkeys.Add(hotkey);
             ActiveHotkeys.Controls.Add(hotkey);
@@ -271,21 +291,21 @@ namespace DofusSwap
 
             return false;
         }
-
-
+        
         #region Overrides of Form
 
         protected override void OnActivated(EventArgs e)
         {
             base.OnActivated(e);
             _TrayManager.VisibilityChanged(Visible = true);
+            _DofusClientManager.SetVisible(true);
         }
 
         protected override void OnDeactivate(EventArgs e)
         {
             base.OnDeactivate(e);
             _TrayManager.VisibilityChanged(Visible = false);
-            _DofusClientManager.RefreshProcessList();
+            _DofusClientManager.SetVisible(false);
         }
 
         #endregion
@@ -351,5 +371,18 @@ namespace DofusSwap
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        private void autoDetectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _AutoDetect = !_AutoDetect;
+            File.WriteAllText(AutodetectTxt, _AutoDetect ? "true" : "false");
+
+            UpdateAutodetect();
+        }
+
+        private void UpdateAutodetect()
+        {
+            AutoDetectMenuItem.Text = _AutoDetect ? "Auto Detecting" : "Manual Adding";
+            _DofusClientManager.SetAutoDetecting(_AutoDetect);
+        }
     }
 }

@@ -6,10 +6,10 @@ namespace DofusSwap.Dofus
     [Serializable]
     public class DofusClientData
     {
-        public string name;
-        public string key;
-        public bool shift;
-        public bool control;
+        public string name { get; set; }
+        public string key{ get; set; }
+        public bool shift{ get; set; }
+        public bool control{ get; set; }
 
         public Keys KeyBind { get; set; }
     }

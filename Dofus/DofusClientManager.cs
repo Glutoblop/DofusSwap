@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace DofusSwap.Dofus
@@ -99,12 +98,17 @@ namespace DofusSwap.Dofus
         private const int EXTENDEDKEY = 0x1;
         private const int KEYUP = 0x2;
 
-        public List<DofusClientData> Clients;
-        private List<Process> _DofusProcesses;
+        public List<DofusClientData> Clients { get; private set; }
+
+        private Timer _RefreshTimer;
+        private bool _AutoDetect = true;
+        private bool _Visible = true;
 
         public static string CONFIG_FILE_PATH = "";
 
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
+
+        public Action<string> OnNewDofusClientDetected { get; set; }
 
         public void Init()
         {
@@ -119,12 +123,75 @@ namespace DofusSwap.Dofus
 
             RefreshConfig();
             UpdateConfig(Clients);
-            RefreshProcessList();
+
+            _RefreshTimer = new Timer();
+            _RefreshTimer.Tick += RefreshTimerOnTick;
+            _RefreshTimer.Interval = (int)TimeSpan.FromSeconds(0.5).TotalMilliseconds;
+            _RefreshTimer.Start();
+        }
+
+        public void SetAutoDetecting(bool autoDetect)
+        {
+            _AutoDetect = autoDetect;
+            UpdateTimerState();
+        }
+
+        public void SetVisible(bool visible)
+        {
+            _Visible = visible;
+            UpdateTimerState();
+        }
+
+        private void UpdateTimerState()
+        {
+            if (_Visible && _AutoDetect)
+            {
+                _RefreshTimer.Start();
+                RefreshTimerOnTick(null, EventArgs.Empty);
+            }
+            else
+            {
+                _RefreshTimer.Stop();
+            }
+
+        }
+
+        private void RefreshTimerOnTick(object sender, EventArgs e)
+        {
+            _RefreshTimer.Stop();
+
+            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            foreach (var process in processes)
+            {
+                if ("DofusSwap" == process.ProcessName) continue;
+
+                var processName = process.ProcessName.ToLowerInvariant();
+                if (!processName.Contains("dofus")) continue;
+
+                var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
+
+                bool newClientFound = true;
+
+                foreach (var client in Clients)
+                {
+                    if (!windowTitleName.StartsWith(client.name.ToLowerInvariant())) continue;
+                    newClientFound = false;
+                    break;
+                }
+
+                if (!newClientFound) continue;
+
+                string dofusCharacterName = process.MainWindowTitle.Split(" ".ToCharArray()).First();
+                OnNewDofusClientDetected?.Invoke(dofusCharacterName);
+            }
+
+            _RefreshTimer.Start();
         }
 
         public void UpdateConfig(List<DofusClientData> clients = null)
         {
             if (clients == null) clients = Clients;
+            Clients = clients;
 
             var clientsJson = JsonConvert.SerializeObject(clients, Formatting.Indented);
 
@@ -137,20 +204,26 @@ namespace DofusSwap.Dofus
             Clients = JsonConvert.DeserializeObject<List<DofusClientData>>(clientConfig) ?? new List<DofusClientData>();
 
             foreach (var dofusClient in Clients)
+            {
                 dofusClient.KeyBind = Enum.TryParse(dofusClient.key, true, out Keys key) ? key : Keys.None;
+            }
         }
 
         private DofusClientData GetClient(Keys key, out Process clientProcess)
         {
             clientProcess = null;
 
-            foreach (var process in _DofusProcesses)
-            foreach (var dofusClient in Clients)
-                if (dofusClient.KeyBind == key && process.MainWindowTitle.StartsWith(dofusClient.name))
+            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            foreach (var process in processes)
+            {
+                foreach (var dofusClient in Clients)
                 {
+                    if (dofusClient.KeyBind != key || !process.MainWindowTitle.StartsWith(dofusClient.name)) continue;
+
                     clientProcess = process;
                     return dofusClient;
                 }
+            }
 
             return null;
         }
@@ -161,7 +234,6 @@ namespace DofusSwap.Dofus
             var clientData = GetClient(keyPressed, out var clientProcess);
             if (clientData == null)
             {
-                RefreshProcessList();
                 clientData = GetClient(keyPressed, out clientProcess);
             }
 
@@ -221,23 +293,6 @@ namespace DofusSwap.Dofus
 
             return true;
 
-        }
-
-        public void RefreshProcessList()
-        {
-            if (Clients == null) return;
-
-            _DofusProcesses = new List<Process>();
-
-            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"))
-                .ToArray();
-            foreach (var process in processes)
-            foreach (var client in Clients)
-                if (process.MainWindowTitle.StartsWith(client.name))
-                {
-                    _DofusProcesses.Add(process);
-                    break;
-                }
         }
     }
 }

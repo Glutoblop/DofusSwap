@@ -36,6 +36,7 @@ namespace DofusSwap
             this.SaveButton = new System.Windows.Forms.Button();
             this.ActiveCharacters = new System.Windows.Forms.Panel();
             this.ActiveHotkeys = new System.Windows.Forms.Panel();
+            this.AutoDetectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,7 +54,8 @@ namespace DofusSwap
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ConfigToolMenuStripItem});
+            this.ConfigToolMenuStripItem,
+            this.AutoDetectMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(3, 1, 0, 1);
@@ -92,6 +94,13 @@ namespace DofusSwap
             this.ActiveHotkeys.Size = new System.Drawing.Size(280, 430);
             this.ActiveHotkeys.TabIndex = 6;
             // 
+            // AutoDetectMenuItem
+            // 
+            this.AutoDetectMenuItem.Name = "AutoDetectMenuItem";
+            this.AutoDetectMenuItem.Size = new System.Drawing.Size(82, 22);
+            this.AutoDetectMenuItem.Text = "Auto Detect";
+            this.AutoDetectMenuItem.Click += new System.EventHandler(this.autoDetectToolStripMenuItem_Click);
+            // 
             // DofusForm
             // 
             this.AllowDrop = true;
@@ -127,6 +136,7 @@ namespace DofusSwap
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Panel ActiveCharacters;
         private System.Windows.Forms.Panel ActiveHotkeys;
+        private System.Windows.Forms.ToolStripMenuItem AutoDetectMenuItem;
     }
 }
 
