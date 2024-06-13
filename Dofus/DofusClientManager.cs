@@ -235,7 +235,7 @@ namespace DofusSwap.Dofus
             {
                 foreach (var dofusClient in Clients)
                 {
-                    if (dofusClient.KeyBind != key || !process.MainWindowTitle.StartsWith(dofusClient.name)) continue;
+                    if (dofusClient.KeyBind != key || !process.MainWindowTitle.Contains(dofusClient.name)) continue;
 
                     clientProcess = process;
                     return dofusClient;
