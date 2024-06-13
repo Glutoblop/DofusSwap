@@ -111,6 +111,8 @@ namespace DofusSwap.Dofus
         private const string NextHotkeyPath = "nexthotkey.txt";
         private int _NextCharIndex = 0;
 
+        private List<Process> _DofusProcesses = new List<Process>();
+
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
 
         public Action<string> OnNewDofusClientDetected { get; set; }
@@ -152,6 +154,10 @@ namespace DofusSwap.Dofus
         {
             _Visible = visible;
             UpdateTimerState();
+
+            if (!_Visible) return;
+
+            _DofusProcesses = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
         }
 
         private void UpdateTimerState()
@@ -230,8 +236,7 @@ namespace DofusSwap.Dofus
         {
             clientProcess = null;
 
-            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
-            foreach (var process in processes)
+            foreach (var process in _DofusProcesses)
             {
                 foreach (var dofusClient in Clients)
                 {
@@ -361,6 +366,16 @@ namespace DofusSwap.Dofus
 
         public void StartAssignNextHotKey()
         {
+            if (_AwaitingNextHotkey)
+            {
+                _AwaitingNextHotkey = false;
+                _NextHotkeyTimer?.Stop();
+                _NextHotkeyTimer?.Dispose();
+                _NextHotkeyTimer = null;
+                OnNextHotkeySet?.Invoke(_NextHotKey = Keys.None);
+                return;
+            }
+
             _NextHotkeyTimer = new Timer();
             _NextHotkeyTimer.Tick += (o, args) =>
             {
