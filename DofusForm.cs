@@ -271,9 +271,12 @@ namespace DofusSwap
                             _KeyDown[Keys.RShiftKey];
                 var control = _KeyDown[Keys.Control] || _KeyDown[Keys.ControlKey] || _KeyDown[Keys.LControlKey] || _KeyDown[Keys.RControlKey];
 
+                bool isHotkey = false;
+
                 foreach (var hotkey in _ActiveHotkeys)
                 {
                     if (hotkey.Key != key) continue;
+                    isHotkey = true;
 
                     if (hotkey.RequireShift && !shift)
                     {
@@ -292,8 +295,11 @@ namespace DofusSwap
                     }
                 }
 
-                
-                return _DofusClientManager.HandleKeyDown(key);
+                //If this is a registered hotkey, then try to handle it.
+                if (isHotkey)
+                {
+                    return _DofusClientManager.HandleKeyDown(key);
+                }
 
             }
 

@@ -157,7 +157,28 @@ namespace DofusSwap.Dofus
 
             if (!_Visible) return;
 
-            _DofusProcesses = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
+            RefreshDofusProcesses();
+        }
+
+        private void RefreshDofusProcesses()
+        {
+            _DofusProcesses = new List<Process>();
+            IEnumerable<Process> processes =
+                Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            foreach (var process in processes)
+            {
+                if ("DofusSwap" == process.ProcessName) continue;
+
+                var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
+
+                //If it only says "dofus [version number]" then its a client in character select, wait.
+                if (!windowTitleName.Contains("- dofus "))
+                {
+                    continue;
+                }
+
+                _DofusProcesses.Add(process);
+            }
         }
 
         private void UpdateTimerState()
@@ -178,20 +199,11 @@ namespace DofusSwap.Dofus
         {
             _RefreshTimer.Stop();
 
-            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
-            foreach (var process in processes)
+            RefreshDofusProcesses();
+
+            foreach (var process in _DofusProcesses)
             {
-                if ("DofusSwap" == process.ProcessName) continue;
-
-                var processName = process.ProcessName.ToLowerInvariant();
-                if (!processName.Contains("dofus")) continue;
-
                 var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
-                //If it only says "dofus" then its a loading client, ignore it
-                if (windowTitleName == "dofus") continue;
-                
-                //If it only says "dofus [version number]" then its a client in character select, wait.
-                if(windowTitleName.StartsWith("dofus ")) continue;
 
                 bool newClientFound = true;
 
@@ -254,7 +266,12 @@ namespace DofusSwap.Dofus
         {
             //Find the process that matches the key press
             var clientData = GetClient(keyPressed, out var clientProcess);
-            if (clientData == null) return false;
+            if (clientData == null)
+            {
+                RefreshDofusProcesses();
+                clientData = GetClient(keyPressed, out clientProcess);
+                if (clientData == null) return false;
+            }
 
             FocusProcessWindow(clientProcess);
 
