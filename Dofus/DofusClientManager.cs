@@ -111,6 +111,12 @@ namespace DofusSwap.Dofus
         private const string NextHotkeyPath = "nexthotkey.txt";
         private int _NextCharIndex = 0;
 
+        private bool _AwaitingPrevHotkey = false;
+        private Keys _PrevHotKey = Keys.None;
+        private Timer _PrevHotkeyTimer;
+        private const string PrevHotkeyPath = "prevhotkey.txt";
+        private int _PrevCharIndex = 0;
+
         private List<Process> _DofusProcesses = new List<Process>();
 
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
@@ -118,6 +124,7 @@ namespace DofusSwap.Dofus
         public Action<string> OnNewDofusClientDetected { get; set; }
         public Action<DofusClientData> OnClientFocused { get; set; }
         public Action<Keys> OnNextHotkeySet { get; set; }
+        public Action<Keys> OnPrevHotkeySet { get; set; }
 
         public void Init()
         {
@@ -132,8 +139,11 @@ namespace DofusSwap.Dofus
 
             if (!File.Exists(NextHotkeyPath)) File.WriteAllText(NextHotkeyPath, Keys.None.ToString());
             _NextHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(NextHotkeyPath));
-
             OnNextHotkeySet?.Invoke(_NextHotKey);
+
+            if (!File.Exists(PrevHotkeyPath)) File.WriteAllText(PrevHotkeyPath, Keys.None.ToString());
+            _PrevHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(PrevHotkeyPath));
+            OnPrevHotkeySet?.Invoke(_PrevHotKey);
 
             RefreshConfig();
             UpdateConfig(Clients);
@@ -406,6 +416,76 @@ namespace DofusSwap.Dofus
             _NextHotkeyTimer.Start();
 
             _AwaitingNextHotkey = true;
+        }
+
+        public bool CheckPrevHotkeyAssignment(Keys key)
+        {
+            if (!_AwaitingPrevHotkey)
+            {
+                return false;
+            }
+
+            _PrevHotKey = key;
+
+            OnPrevHotkeySet?.Invoke(_PrevHotKey);
+
+            _PrevHotkeyTimer.Stop();
+            _PrevHotkeyTimer.Dispose();
+            _PrevHotkeyTimer = null;
+
+            File.WriteAllText(PrevHotkeyPath, _PrevHotKey.ToString());
+
+            _AwaitingPrevHotkey = false;
+
+            return true;
+        }
+
+        public bool CheckPrevHotkeyTrigger(Keys key)
+        {
+            if (_PrevHotKey != key) return false;
+
+            _PrevCharIndex++;
+            if (_PrevCharIndex >= Clients.Count) _PrevCharIndex = 0;
+
+            var client = Clients[_PrevCharIndex];
+
+            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            foreach (var process in processes)
+            {
+                if (!process.MainWindowTitle.StartsWith(client.name)) continue;
+
+                FocusProcessWindow(process);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void StartAssignPreviousHotKey()
+        {
+            if (_AwaitingPrevHotkey)
+            {
+                _AwaitingPrevHotkey = false;
+                _PrevHotkeyTimer?.Stop();
+                _PrevHotkeyTimer?.Dispose();
+                _PrevHotkeyTimer = null;
+                OnPrevHotkeySet?.Invoke(_PrevHotKey = Keys.None);
+                return;
+            }
+
+            _PrevHotkeyTimer = new Timer();
+            _PrevHotkeyTimer.Tick += (o, args) =>
+            {
+                OnPrevHotkeySet?.Invoke(_PrevHotKey);
+
+                _PrevHotkeyTimer.Stop();
+                _PrevHotkeyTimer = null;
+                _AwaitingPrevHotkey = false;
+            };
+            _PrevHotkeyTimer.Interval = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+            _PrevHotkeyTimer.Start();
+
+            _AwaitingPrevHotkey = true;
         }
     }
 }

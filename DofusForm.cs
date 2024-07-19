@@ -63,6 +63,11 @@ namespace DofusSwap
                 NextCharacterHotkey.Text = nextHotkey == Keys.None ? "Next Char Hotkey" : $"[ {nextHotkey:G} ]";
             };
 
+            _DofusClientManager.OnPrevHotkeySet += (prevHotkey) =>
+            {
+                PrevCharacterHotkey.Text = prevHotkey == Keys.None ? "Prev Char Hotkey" : $"[ {prevHotkey:G} ]";
+            };
+
             InitializeComponent();
 
             _TrayManager.Init();
@@ -244,7 +249,7 @@ namespace DofusSwap
 
             if (Visible)
             {
-                if (_DofusClientManager.CheckNextHotkeyAssignment(key))
+                if (_DofusClientManager.CheckNextHotkeyAssignment(key) || _DofusClientManager.CheckPrevHotkeyAssignment(key))
                 {
                     return false;
                 }
@@ -262,7 +267,7 @@ namespace DofusSwap
             }
             else
             {
-                if (_DofusClientManager.CheckNextHotkeyTrigger(key))
+                if (_DofusClientManager.CheckNextHotkeyTrigger(key) || _DofusClientManager.CheckPrevHotkeyTrigger(key))
                 {
                     return false;
                 }
@@ -387,14 +392,18 @@ namespace DofusSwap
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Tab)
+            if (_ActiveCharacters?.Count > 0)
             {
-                _FocusedIndex += 1;
-                _FocusedIndex %= _ActiveCharacters.Count;
-                _ActiveCharacters[_FocusedIndex].NameLabel.Select();
-                _ActiveCharacters[_FocusedIndex].NameLabel.SelectAll();
-                return true;
+                if (keyData == Keys.Tab)
+                {
+                    _FocusedIndex += 1;
+                    _FocusedIndex %= _ActiveCharacters.Count;
+                    _ActiveCharacters[_FocusedIndex].NameLabel.Select();
+                    _ActiveCharacters[_FocusedIndex].NameLabel.SelectAll();
+                    return true;
+                }
             }
+
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
@@ -416,6 +425,12 @@ namespace DofusSwap
         {
             NextCharacterHotkey.Text = $"Press Key..";
             _DofusClientManager.StartAssignNextHotKey();
+        }
+
+        private void PrevHotkey_Click(object sender, EventArgs e)
+        {
+            PrevCharacterHotkey.Text = $"Press Key..";
+            _DofusClientManager.StartAssignPreviousHotKey();
         }
     }
 }
