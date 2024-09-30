@@ -444,8 +444,8 @@ namespace DofusSwap.Dofus
         {
             if (_PrevHotKey != key) return false;
 
-            _PrevCharIndex--;
-            if (_PrevCharIndex < 0) _PrevCharIndex = Clients.Count-1;
+            _PrevCharIndex++;
+            if (_PrevCharIndex >= Clients.Count) _PrevCharIndex = 0;
 
             var client = Clients[_PrevCharIndex];
 
