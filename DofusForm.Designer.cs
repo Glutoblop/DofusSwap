@@ -38,7 +38,6 @@ namespace DofusSwap
             this.ActiveCharacters = new System.Windows.Forms.Panel();
             this.ActiveHotkeys = new System.Windows.Forms.Panel();
             this.NextCharacterHotkey = new System.Windows.Forms.Button();
-            this.PrevCharacterHotkey = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -105,7 +104,7 @@ namespace DofusSwap
             // 
             // NextCharacterHotkey
             // 
-            this.NextCharacterHotkey.Location = new System.Drawing.Point(298, 27);
+            this.NextCharacterHotkey.Location = new System.Drawing.Point(256, 27);
             this.NextCharacterHotkey.Name = "NextCharacterHotkey";
             this.NextCharacterHotkey.Size = new System.Drawing.Size(78, 36);
             this.NextCharacterHotkey.TabIndex = 8;
@@ -113,23 +112,12 @@ namespace DofusSwap
             this.NextCharacterHotkey.UseVisualStyleBackColor = true;
             this.NextCharacterHotkey.Click += new System.EventHandler(this.NextCharacterHotkey_Click);
             // 
-            // PrevCharacterHotkey
-            // 
-            this.PrevCharacterHotkey.Location = new System.Drawing.Point(214, 27);
-            this.PrevCharacterHotkey.Name = "PrevCharacterHotkey";
-            this.PrevCharacterHotkey.Size = new System.Drawing.Size(78, 36);
-            this.PrevCharacterHotkey.TabIndex = 9;
-            this.PrevCharacterHotkey.Text = "Prev Char Hotkey";
-            this.PrevCharacterHotkey.UseVisualStyleBackColor = true;
-            this.PrevCharacterHotkey.Click += new System.EventHandler(this.PrevHotkey_Click);
-            // 
             // DofusForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(604, 511);
-            this.Controls.Add(this.PrevCharacterHotkey);
             this.Controls.Add(this.NextCharacterHotkey);
             this.Controls.Add(this.ActiveHotkeys);
             this.Controls.Add(this.ActiveCharacters);
@@ -162,7 +150,6 @@ namespace DofusSwap
         private System.Windows.Forms.Panel ActiveHotkeys;
         private System.Windows.Forms.ToolStripMenuItem AutoDetectMenuItem;
         private System.Windows.Forms.Button NextCharacterHotkey;
-        private System.Windows.Forms.Button PrevCharacterHotkey;
     }
 }
 
