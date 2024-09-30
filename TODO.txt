@@ -1,0 +1,14 @@
+https://raw.githubusercontent.com/Glutoblop/DofusSwap/refs/heads/master/Downloadables/dofusswap_1.1.8.zip
+
+
+Auto download could query this directly.
+Increment by 1.0.0, check if exists.
+	if not exists, drop to next check.
+	if exists, do it again until it doesn't exist anymore, then pick previous one before failure.
+Increment by 0.1.0, check if exists.
+	if not exists, drop to next check.
+	if exists, do it again until it doesn't exist anymore, then pick previous one before failure.	
+Incremenet by 0.0.1, check if exists.
+	if not exists, drop to next check.
+	if exists, do it again until it doesn't exist anymore, then pick previous one before failure.
+
