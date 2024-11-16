@@ -119,6 +119,8 @@ namespace DofusSwap.Dofus
         public Action<DofusClientData> OnClientFocused { get; set; }
         public Action<Keys> OnNextHotkeySet { get; set; }
 
+        public bool IsInit = false;
+
         public void Init()
         {
             CONFIG_FILE_PATH = Path.Combine(Environment.CurrentDirectory, "dofusclients.json");
@@ -132,6 +134,8 @@ namespace DofusSwap.Dofus
 
             if (!File.Exists(NextHotkeyPath)) File.WriteAllText(NextHotkeyPath, Keys.None.ToString());
             _NextHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(NextHotkeyPath));
+
+            IsInit = true;
 
             OnNextHotkeySet?.Invoke(_NextHotKey);
 
@@ -154,6 +158,7 @@ namespace DofusSwap.Dofus
         {
             _Visible = visible;
             UpdateTimerState();
+            UpdateConfig(Clients);
 
             if (!_Visible) return;
 
@@ -225,6 +230,8 @@ namespace DofusSwap.Dofus
 
         public void UpdateConfig(List<DofusClientData> clients = null)
         {
+            if(!IsInit) return;
+
             if (clients == null) clients = Clients;
             Clients = clients;
 

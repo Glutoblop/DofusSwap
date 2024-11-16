@@ -161,7 +161,7 @@ namespace DofusSwap
 
             hotkey.OnModified += modifiedHotkey =>
             {
-                //Ignored for now
+                UpdateConfigs();
             };
 
             hotkey.OnDeleted += deletedHotkey =>
