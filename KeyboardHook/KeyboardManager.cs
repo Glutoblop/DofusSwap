@@ -82,8 +82,8 @@ namespace DofusSwap.KeyboardHook
             return CallNextHookEx(_WindowsHookEx, code, (int)wParam, lParam);
         }
 
-        public event Func<Keys, bool> OnKeyPressed;
-        public event Func<Keys, bool> OnKeyReleased;
+        public Func<Keys, bool> OnKeyPressed { get; set; }
+        public Func<Keys, bool> OnKeyReleased { get; set; }
 
         public KeyboardManager()
         {

@@ -273,7 +273,7 @@ namespace DofusSwap.Dofus
                 if (clientData == null) return false;
             }
 
-            FocusProcessWindow(clientProcess);
+            bool success = FocusProcessWindow(clientProcess);
 
             _NextCharIndex = Clients.IndexOf(clientData);
 
@@ -281,11 +281,11 @@ namespace DofusSwap.Dofus
 
             //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
 
-            return true;
+            return success;
 
         }
 
-        private void FocusProcessWindow(Process clientProcess)
+        private bool FocusProcessWindow(Process clientProcess)
         {
             //OLD - Simulate alt key down
             //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
@@ -310,9 +310,10 @@ namespace DofusSwap.Dofus
             OnSimulatingAltIsPressed?.Invoke(true);
             SendInput((uint)altDown.Length, altDown, Marshal.SizeOf(typeof(Input)));
 
-            SetForegroundWindow(clientProcess.MainWindowHandle);
+            bool success = true;
+            success &= SetForegroundWindow(clientProcess.MainWindowHandle);
             SwitchToThisWindow(clientProcess.MainWindowHandle, true);
-            BringWindowToTop(clientProcess.MainWindowHandle);
+            success &= BringWindowToTop(clientProcess.MainWindowHandle);
 
             // OLD - Simulate a key release
             //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
@@ -336,6 +337,8 @@ namespace DofusSwap.Dofus
             };
             SendInput((uint)altUp.Length, altUp, Marshal.SizeOf(typeof(Input)));
             OnSimulatingAltIsPressed?.Invoke(false);
+
+            return success;
         }
 
         public bool CheckNextHotkeyAssignment(Keys key)
@@ -374,8 +377,7 @@ namespace DofusSwap.Dofus
             {
                 if (!process.MainWindowTitle.StartsWith(client.name)) continue;
 
-                FocusProcessWindow(process);
-                return true;
+                return FocusProcessWindow(process);
             }
 
             return false;
