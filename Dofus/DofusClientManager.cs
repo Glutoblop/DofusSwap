@@ -168,8 +168,8 @@ namespace DofusSwap.Dofus
         private void RefreshDofusProcesses()
         {
             _DofusProcesses = new List<Process>();
-            IEnumerable<Process> processes =
-                Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            List<Process> processes =
+                Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
             foreach (var process in processes)
             {
                 if ("DofusSwap" == process.ProcessName) continue;
@@ -177,10 +177,10 @@ namespace DofusSwap.Dofus
                 var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
 
                 //If it only says "dofus [version number]" then its a client in character select, wait.
-                if (!windowTitleName.Contains("- dofus "))
-                {
-                    continue;
-                }
+                //if (!windowTitleName.Contains("- dofus "))
+                //{
+                //    continue;
+                //}
 
                 _DofusProcesses.Add(process);
             }
