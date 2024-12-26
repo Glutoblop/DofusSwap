@@ -399,6 +399,7 @@ namespace DofusSwap.Dofus
                 _NextHotkeyTimer?.Dispose();
                 _NextHotkeyTimer = null;
                 OnNextHotkeySet?.Invoke(_NextHotKey = Keys.None);
+                File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
                 return;
             }
 
@@ -406,6 +407,7 @@ namespace DofusSwap.Dofus
             _NextHotkeyTimer.Tick += (o, args) =>
             {
                 OnNextHotkeySet?.Invoke(_NextHotKey);
+                File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
 
                 _NextHotkeyTimer.Stop();
                 _NextHotkeyTimer = null;
