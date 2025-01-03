@@ -13,7 +13,7 @@
     Because of this, you are using this application at your own
     risk.  
  
-[<img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Wiki/res/download_here.png" width=600>](https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_1.1.19.zip)
+[<img src="https://raw.githubusercontent.com/Glutoblop/DofusSwap/master/Wiki/res/download_here.png" width=600>](https://raw.github.com/Glutoblop/DofusSwap/master/Downloadables/dofusswap_1.1.20.zip)
 
 The full source of this application is available under MIT License: 
 https://github.com/Glutoblop/DofusSwap     
