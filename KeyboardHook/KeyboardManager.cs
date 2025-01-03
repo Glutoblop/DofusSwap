@@ -25,8 +25,12 @@ namespace DofusSwap.KeyboardHook
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         const int WH_KEYBOARD_LL = 13;
+
         const int WM_KEYDOWN = 0x100;
+        const int SYS_KEYDOWN = 0x104;
+
         const int WM_KEYUP = 0x101;
+        const int SYS_KEYUP = 0x105;
 
         private IntPtr _WindowsHookEx = IntPtr.Zero;
 
@@ -57,7 +61,7 @@ namespace DofusSwap.KeyboardHook
 
             switch (code >= 0)
             {
-                case true when wParam == (IntPtr)WM_KEYDOWN:
+                case true when wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)SYS_KEYDOWN:
                     {
                         var key = (Keys)Marshal.ReadInt32(lParam);
                         if (OnKeyPressed?.Invoke(key) ?? false)
@@ -67,7 +71,7 @@ namespace DofusSwap.KeyboardHook
 
                         break;
                     }
-                case true when wParam == (IntPtr)WM_KEYUP:
+                case true when wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)SYS_KEYUP:
                     {
                         var key = (Keys)Marshal.ReadInt32(lParam);
                         if (OnKeyReleased?.Invoke(key) ?? false)
