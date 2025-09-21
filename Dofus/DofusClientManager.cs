@@ -222,6 +222,7 @@ namespace DofusSwap.Dofus
                 if (!newClientFound) continue;
 
                 string dofusCharacterName = process.MainWindowTitle.Split(" ".ToCharArray()).First();
+                if(string.IsNullOrEmpty(dofusCharacterName)) continue;
                 OnNewDofusClientDetected?.Invoke(dofusCharacterName);
             }
 
