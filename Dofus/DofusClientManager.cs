@@ -168,8 +168,11 @@ namespace DofusSwap.Dofus
         private void RefreshDofusProcesses()
         {
             _DofusProcesses = new List<Process>();
-            List<Process> processes =
-                Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
+            List<Process> processes = Process.GetProcesses().Where(s => 
+                s.ProcessName.ToLowerInvariant().Contains("dofus") || 
+                s.ProcessName.ToLowerInvariant().Contains("wakfu")
+            ).ToList();
+
             foreach (var process in processes)
             {
                 if ("DofusSwap" == process.ProcessName) continue;
@@ -380,7 +383,11 @@ namespace DofusSwap.Dofus
 
             var client = Clients[_NextCharIndex];
 
-            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
+            IEnumerable<Process> processes = Process.GetProcesses()
+                .Where(s => 
+                s.ProcessName.ToLowerInvariant().Contains("dofus") ||
+                s.ProcessName.ToLowerInvariant().Contains("wakfu")
+                );
             foreach (var process in processes)
             {
                 if (!process.MainWindowTitle.StartsWith(client.name)) continue;
