@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace DofusSwap.Dofus
@@ -260,7 +261,16 @@ namespace DofusSwap.Dofus
             {
                 foreach (var dofusClient in Clients)
                 {
-                    if (dofusClient.KeyBind != key || !process.MainWindowTitle.Contains(dofusClient.name)) continue;
+                    if (dofusClient.KeyBind != key)
+                        continue;
+
+                    //Match the full word of the character in the window, not just if it contains.
+                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
+                    var clientName = Regex.Escape(dofusClient.name);
+                    var pattern = $@"\b{clientName}\b";
+
+                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
+                        continue;
 
                     clientProcess = process;
                     return dofusClient;
