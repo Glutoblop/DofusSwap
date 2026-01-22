@@ -209,13 +209,18 @@ namespace DofusSwap.Dofus
 
             foreach (var process in _DofusProcesses)
             {
-                var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
-
                 bool newClientFound = true;
 
-                foreach (var client in Clients)
+                foreach (var dofusClient in Clients)
                 {
-                    if (!windowTitleName.StartsWith(client.name.ToLowerInvariant())) continue;
+                    //Match the full word of the character in the window, not just if it contains.
+                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
+                    var clientName = Regex.Escape(dofusClient.name);
+                    var pattern = $@"\b{clientName}\b";
+
+                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
+                        continue;
+
                     newClientFound = false;
                     break;
                 }
@@ -385,18 +390,30 @@ namespace DofusSwap.Dofus
         {
             if (_NextHotKey != key) return false;
 
-            _NextCharIndex++;
-            if (_NextCharIndex >= Clients.Count) _NextCharIndex = 0;
+            var startingIndex = _NextCharIndex;
+            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
 
-            var client = Clients[_NextCharIndex];
-
-            IEnumerable<Process> processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus"));
-            foreach (var process in processes)
+            do
             {
-                if (!process.MainWindowTitle.StartsWith(client.name)) continue;
+                _NextCharIndex++;
+                if (_NextCharIndex >= Clients.Count) _NextCharIndex = 0;
 
-                return FocusProcessWindow(process);
+                var dofusClient = Clients[_NextCharIndex];
+                
+                foreach (var process in processes)
+                {
+                    //Match the full word of the character in the window, not just if it contains.
+                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
+                    var clientName = Regex.Escape(dofusClient.name);
+                    var pattern = $@"\b{clientName}\b";
+
+                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
+                        continue;
+
+                    return FocusProcessWindow(process);
+                }
             }
+            while(startingIndex != _NextCharIndex);
 
             return false;
         }
