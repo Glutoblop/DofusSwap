@@ -60,6 +60,11 @@ namespace DofusSwap
                 NextCharacterHotkey.Text = nextHotkey == Keys.None ? "Next Char Hotkey" : $"[ {nextHotkey:G} ]";
             };
 
+            _DofusClientManager.OnPrevHotkeySet += prevHotkey =>
+            {
+                PrevCharacterHotkey.Text = prevHotkey == Keys.None ? "Prev Char Hotkey" : $"[ {prevHotkey:G} ]";
+            };
+
             InitializeComponent();
 
             AppTheme.Apply(this);
@@ -237,6 +242,9 @@ namespace DofusSwap
                 if (_DofusClientManager.CheckNextHotkeyAssignment(key))
                     return false;
 
+                if (_DofusClientManager.CheckPrevHotkeyAssignment(key))
+                    return false;
+
                 foreach (var hotkey in _ActiveHotkeys)
                 {
                     if (hotkey.OnKeyPressed(key))
@@ -247,7 +255,10 @@ namespace DofusSwap
             }
 
             if (_DofusClientManager.CheckNextHotkeyTrigger(key))
-                return false;
+                return true;
+
+            if (_DofusClientManager.CheckPrevHotkeyTrigger(key))
+                return true;
 
             var shift = _keysDown.Contains(Keys.ShiftKey)
                         || _keysDown.Contains(Keys.LShiftKey)
@@ -373,6 +384,12 @@ namespace DofusSwap
         {
             NextCharacterHotkey.Text = "Press Key..";
             _DofusClientManager.StartAssignNextHotKey();
+        }
+
+        private void PrevCharacterHotkey_Click(object sender, EventArgs e)
+        {
+            PrevCharacterHotkey.Text = "Press Key..";
+            _DofusClientManager.StartAssignPrevHotKey();
         }
     }
 }
