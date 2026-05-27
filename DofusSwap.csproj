@@ -262,8 +262,9 @@
     <Compile Include="Dofus\DofusClientData.cs" />
     <Compile Include="Dofus\DofusClientManager.cs" />
     <Compile Include="Draggable\ControlExtension.cs" />
-    <Compile Include="Hotkey\Hotkey.cs" />
     <Compile Include="KeyboardHook\KeyboardManager.cs" />
+    <Compile Include="UI\AppTheme.cs" />
+    <Compile Include="UI\Animator.cs" />
     <Compile Include="Prefabs\ConfiguredCharacterName.cs">
       <SubType>UserControl</SubType>
     </Compile>

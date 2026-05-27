@@ -1,12 +1,12 @@
-﻿using DofusSwap.Dofus;
+using DofusSwap.Dofus;
 using DofusSwap.KeyboardHook;
 using DofusSwap.Prefabs;
 using DofusSwap.Tray;
+using DofusSwap.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace DofusSwap
@@ -17,22 +17,24 @@ namespace DofusSwap
         private KeyboardManager _KeyboardManager;
         private DofusClientManager _DofusClientManager;
 
-        private bool _Initialising = false;
+        private bool _Initialising;
         private List<ConfiguredCharacterName> _ActiveCharacters = new List<ConfiguredCharacterName>();
         private List<ConfiguredHotkey> _ActiveHotkeys = new List<ConfiguredHotkey>();
 
-        private int _FocusedIndex = 0;
+        private int _FocusedIndex;
 
         private bool _AutoDetect = true;
         private const string AutodetectPath = "autodetect.txt";
-        
-        private Dictionary<Keys, bool> _KeyDown = new Dictionary<Keys, bool>();
+
+        private readonly HashSet<Keys> _keysDown = new HashSet<Keys>();
 
         public DofusForm()
         {
             _Initialising = true;
 
-            if(!File.Exists(AutodetectPath)) File.WriteAllText(AutodetectPath, "true");
+            DoubleBuffered = true;
+
+            if (!File.Exists(AutodetectPath)) File.WriteAllText(AutodetectPath, "true");
             _AutoDetect = bool.Parse(File.ReadAllText(AutodetectPath));
 
             _TrayManager = new TrayManager();
@@ -43,34 +45,31 @@ namespace DofusSwap
             _KeyboardManager.OnKeyReleased += OnKeyboardHookReleased;
 
             _DofusClientManager = new DofusClientManager();
-            _DofusClientManager.OnSimulatingAltIsPressed += (simAltPressed) =>
+            _DofusClientManager.OnSimulatingAltIsPressed += simAltPressed =>
             {
                 _KeyboardManager.ConsumeAlt = simAltPressed;
             };
 
-            _DofusClientManager.OnNewDofusClientDetected += (dofusCharacterName) =>
+            _DofusClientManager.OnNewDofusClientDetected += dofusCharacterName =>
             {
-                AddCharacter(dofusCharacterName,Keys.None, false, false);
+                AddCharacter(dofusCharacterName, Keys.None, false, false);
             };
 
-            _DofusClientManager.OnClientFocused += (clientFocused) =>
-            {
-                //ignored
-            };
-
-            _DofusClientManager.OnNextHotkeySet += (nextHotkey) =>
+            _DofusClientManager.OnNextHotkeySet += nextHotkey =>
             {
                 NextCharacterHotkey.Text = nextHotkey == Keys.None ? "Next Char Hotkey" : $"[ {nextHotkey:G} ]";
             };
 
             InitializeComponent();
 
+            AppTheme.Apply(this);
+            AppTheme.EnableDoubleBuffering(ActiveCharacters);
+            AppTheme.EnableDoubleBuffering(ActiveHotkeys);
+
             _TrayManager.Init();
             _DofusClientManager.Init();
 
             KeyPreview = true;
-
-            Shown += OnShown;
             Closed += OnClosed;
 
             UpdateAutodetect();
@@ -82,16 +81,9 @@ namespace DofusSwap
                 AddCharacter(client.name, client.KeyBind, client.shift, client.control);
             }
 
-            foreach (Keys key in Enum.GetValues(typeof(Keys)).OfType<Keys>())
-            {
-                if (_KeyDown.ContainsKey(key)) continue;
-                _KeyDown.Add(key,false);
-            }
-
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fvi.FileVersion;
-            Text = $"Dofus Swap - {version}";
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
+            Text = $"Dofus Swap - {fvi.FileVersion}";
 
             _Initialising = false;
         }
@@ -104,11 +96,11 @@ namespace DofusSwap
 
         private void AddCharacter(string displayName, Keys key, bool shift, bool control)
         {
-            // --- ADD CHARACTER
             var configuredCharacter = new ConfiguredCharacterName();
             configuredCharacter.SetDisplayName(displayName);
             configuredCharacter.Location = new Point(0, _ActiveCharacters.Count * configuredCharacter.Size.Height);
             configuredCharacter.UpdateIndex();
+            AppTheme.ApplyToControl(configuredCharacter);
 
             configuredCharacter.OnSelected += character =>
             {
@@ -124,7 +116,6 @@ namespace DofusSwap
             {
                 if (newindex >= _ActiveCharacters.Count) return;
 
-                //Move the character in the new index, into the old index.
                 var replaced = _ActiveCharacters[newindex];
                 _ActiveCharacters[newindex] = character;
                 _ActiveCharacters[oldindex] = replaced;
@@ -133,17 +124,16 @@ namespace DofusSwap
                 {
                     var activeChar = _ActiveCharacters[i];
                     if (activeChar == character) continue;
-                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
+                    Animator.SlideTo(activeChar, new Point(0, i * activeChar.Size.Height), 150);
                 }
             };
 
-            configuredCharacter.OnDropped += (character) =>
+            configuredCharacter.OnDropped += character =>
             {
                 for (var i = 0; i < _ActiveCharacters.Count; i++)
                 {
-                    var activeChar = _ActiveCharacters[i];
-                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
-                    activeChar.UpdateIndex();
+                    Animator.SlideTo(_ActiveCharacters[i], new Point(0, i * _ActiveCharacters[i].Size.Height), 150);
+                    _ActiveCharacters[i].UpdateIndex();
                 }
                 UpdateConfigs();
             };
@@ -151,13 +141,12 @@ namespace DofusSwap
             _ActiveCharacters.Add(configuredCharacter);
             ActiveCharacters.Controls.Add(configuredCharacter);
 
-            // --- ADD HOTKEY
-
             var hotkey = new ConfiguredHotkey();
             hotkey.SetRequireShift(shift);
             hotkey.SetRequireControl(control);
             hotkey.SetHotkey(key);
             hotkey.Location = new Point(0, _ActiveHotkeys.Count * configuredCharacter.Size.Height);
+            AppTheme.ApplyToControl(hotkey);
 
             hotkey.OnModified += modifiedHotkey =>
             {
@@ -176,15 +165,14 @@ namespace DofusSwap
 
                 for (var i = 0; i < _ActiveCharacters.Count; i++)
                 {
-                    var activeChar = _ActiveCharacters[i];
-                    activeChar.Location = new Point(0, i * activeChar.Size.Height);
-                    activeChar.UpdateIndex();
-
-                    _ActiveHotkeys[i].Location = new Point(0, i * configuredCharacter.Size.Height);
+                    Animator.SlideTo(_ActiveCharacters[i], new Point(0, i * _ActiveCharacters[i].Size.Height), 150);
+                    _ActiveCharacters[i].UpdateIndex();
+                    Animator.SlideTo(_ActiveHotkeys[i], new Point(0, i * _ActiveHotkeys[i].Size.Height), 150);
                 }
 
                 UpdateConfigs();
             };
+
             _ActiveHotkeys.Add(hotkey);
             ActiveHotkeys.Controls.Add(hotkey);
 
@@ -197,7 +185,7 @@ namespace DofusSwap
         {
             if (_Initialising) return;
 
-            List<DofusClientData> clients = new List<DofusClientData>();
+            var clients = new List<DofusClientData>();
             for (var index = 0; index < _ActiveCharacters.Count; index++)
             {
                 var activeCharacter = _ActiveCharacters[index];
@@ -222,103 +210,78 @@ namespace DofusSwap
             _TrayManager?.Stop();
         }
 
-        private void OnShown(object sender, EventArgs e)
-        {
-            //Visible = false;
-        }
-
         private void TrayManagerOnOnVisibilityToggled(bool vis)
         {
-            Visible = vis;
-
-            if (!vis) return;
-            WindowState = FormWindowState.Minimized;
-            Show();
-            WindowState = FormWindowState.Normal;
-            Activate();
+            if (vis)
+            {
+                Opacity = 0;
+                Visible = true;
+                WindowState = FormWindowState.Minimized;
+                Show();
+                WindowState = FormWindowState.Normal;
+                Activate();
+                Animator.FadeTo(this, 1.0, 180);
+            }
+            else
+            {
+                Visible = false;
+            }
         }
 
         private bool OnKeyboardHookPress(Keys key)
         {
-            _KeyDown[key] = true;
+            _keysDown.Add(key);
 
             if (Visible)
             {
                 if (_DofusClientManager.CheckNextHotkeyAssignment(key))
-                {
                     return false;
-                }
 
                 foreach (var hotkey in _ActiveHotkeys)
                 {
                     if (hotkey.OnKeyPressed(key))
-                    {
                         break;
-                    }
                 }
 
-                //Don't need to do anything special here, want the keyboard to work as normal while the application is visible.
                 return false;
             }
-            else
+
+            if (_DofusClientManager.CheckNextHotkeyTrigger(key))
+                return false;
+
+            var shift = _keysDown.Contains(Keys.ShiftKey)
+                        || _keysDown.Contains(Keys.LShiftKey)
+                        || _keysDown.Contains(Keys.RShiftKey);
+            var control = _keysDown.Contains(Keys.ControlKey)
+                          || _keysDown.Contains(Keys.LControlKey)
+                          || _keysDown.Contains(Keys.RControlKey);
+
+            bool isHotkey = false;
+
+            foreach (var hotkey in _ActiveHotkeys)
             {
-                if (_DofusClientManager.CheckNextHotkeyTrigger(key))
-                {
+                if (hotkey.Key != key) continue;
+                isHotkey = true;
+
+                if (hotkey.RequireShift && !shift)
                     return false;
-                }
 
-                var shift = _KeyDown[Keys.Shift] || _KeyDown[Keys.ShiftKey] || _KeyDown[Keys.LShiftKey] ||
-                            _KeyDown[Keys.RShiftKey];
-                var control = _KeyDown[Keys.Control] || _KeyDown[Keys.ControlKey] || _KeyDown[Keys.LControlKey] || _KeyDown[Keys.RControlKey];
-
-                bool isHotkey = false;
-
-                foreach (var hotkey in _ActiveHotkeys)
-                {
-                    if (hotkey.Key != key) continue;
-                    isHotkey = true;
-
-                    if (hotkey.RequireShift && !shift)
-                    {
-#if DEBUG
-                        Console.WriteLine($"Key pressed: {key} but required Shift and not pressed");
-#endif
-                        return false;
-                    }
-
-                    if (hotkey.RequireControl && !control)
-                    {
-#if DEBUG
-                        Console.WriteLine($"Key pressed: {key} but required Control and not pressed");
-#endif
-                        return false;
-                    }
-                }
-
-                //If this is a registered hotkey, then try to handle it.
-                if (isHotkey)
-                {
-                    return _DofusClientManager.HandleKeyDown(key);
-                }
-
+                if (hotkey.RequireControl && !control)
+                    return false;
             }
 
-#if DEBUG
-            Console.WriteLine($"Key pressed: {key}");
-#endif
+            if (isHotkey)
+                return _DofusClientManager.HandleKeyDown(key);
+
             return false;
         }
 
         private bool OnKeyboardHookReleased(Keys key)
         {
-#if DEBUG
-            Console.WriteLine($"Key released: {key}");
-#endif
-            _KeyDown[key] = false;
-
+            _keysDown.Remove(key);
             return false;
         }
-        
+
         #region Overrides of Form
 
         protected override void OnActivated(EventArgs e)
@@ -355,17 +318,13 @@ namespace DofusSwap
 
         private void ConfigToolStrip_OnClick(object sender, EventArgs e)
         {
-            if (sender is ToolStripMenuItem ts && ts.Name == "ConfigToolMenuStripItem")
+            var dir = new FileInfo(DofusClientManager.CONFIG_FILE_PATH);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                var dir = new FileInfo(DofusClientManager.CONFIG_FILE_PATH);
-
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                {
-                    FileName = dir.DirectoryName,
-                    UseShellExecute = true,
-                    Verb = "open"
-                });
-            }
+                FileName = dir.DirectoryName,
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
@@ -387,10 +346,9 @@ namespace DofusSwap
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Tab)
+            if (keyData == Keys.Tab && _ActiveCharacters.Count > 0)
             {
-                _FocusedIndex += 1;
-                _FocusedIndex %= _ActiveCharacters.Count;
+                _FocusedIndex = (_FocusedIndex + 1) % _ActiveCharacters.Count;
                 _ActiveCharacters[_FocusedIndex].NameLabel.Select();
                 _ActiveCharacters[_FocusedIndex].NameLabel.SelectAll();
                 return true;
@@ -402,7 +360,6 @@ namespace DofusSwap
         {
             _AutoDetect = !_AutoDetect;
             File.WriteAllText(AutodetectPath, _AutoDetect ? "true" : "false");
-
             UpdateAutodetect();
         }
 
@@ -414,7 +371,7 @@ namespace DofusSwap
 
         private void NextCharacterHotkey_Click(object sender, EventArgs e)
         {
-            NextCharacterHotkey.Text = $"Press Key..";
+            NextCharacterHotkey.Text = "Press Key..";
             _DofusClientManager.StartAssignNextHotKey();
         }
     }
