@@ -1,9 +1,8 @@
-﻿using System;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace DofusSwap.Dofus
 {
-    [Serializable]
     public class DofusClientData
     {
         public string name { get; set; }
@@ -11,6 +10,7 @@ namespace DofusSwap.Dofus
         public bool shift { get; set; }
         public bool control { get; set; }
 
+        [JsonIgnore]
         public Keys KeyBind { get; set; }
     }
 }

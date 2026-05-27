@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -9,20 +9,23 @@ namespace DofusSwap.Prefabs
         public Action<ConfiguredHotkey> OnModified { get; set; }
         public Action<ConfiguredHotkey> OnDeleted { get; set; }
 
-        public Keys Key => Enum.TryParse(CharacterHotkeyButton.Text, true, out Keys key) ? key : Keys.None;
+        private Keys _key = Keys.None;
+        public Keys Key => _key;
 
         public bool RequireShift => ShiftOn.Checked;
         public void SetRequireShift(bool require) => ShiftOn.Checked = require;
         public bool RequireControl => ControlOn.Checked;
         public void SetRequireControl(bool require) => ControlOn.Checked = require;
 
-        private bool _WaitingForKeyPress = false;
-        private Keys _Keyhit = Keys.None;
+        private bool _WaitingForKeyPress;
+        private TaskCompletionSource<Keys> _keyAssignment;
 
         public ConfiguredHotkey()
         {
             InitializeComponent();
             SetHotkey(Keys.None);
+            ShiftOn.CheckedChanged += (s, e) => OnModified?.Invoke(this);
+            ControlOn.CheckedChanged += (s, e) => OnModified?.Invoke(this);
         }
 
         private void RemoveConfig_Click(object sender, EventArgs e)
@@ -32,7 +35,8 @@ namespace DofusSwap.Prefabs
 
         public void SetHotkey(Keys key)
         {
-            CharacterHotkeyButton.Text = key == Keys.None ? "[ NOT ASSIGNED ] " : key.ToString();
+            _key = key;
+            CharacterHotkeyButton.Text = key == Keys.None ? "[ NOT ASSIGNED ]" : key.ToString();
         }
 
         private async void CharacterHotkeyButton_Click(object sender, EventArgs e)
@@ -40,33 +44,16 @@ namespace DofusSwap.Prefabs
             if (_WaitingForKeyPress) return;
             _WaitingForKeyPress = true;
 
-            var cachedKey = Key;
-            _Keyhit = Keys.None;
-
+            var cachedKey = _key;
             CharacterHotkeyButton.Text = "Press Key..";
 
-            var keyPressTask = Task.Factory.StartNew(() =>
+            _keyAssignment = new TaskCompletionSource<Keys>();
+            var timeout = Task.Delay(10000);
+            var completed = await Task.WhenAny(_keyAssignment.Task, timeout);
+
+            if (completed == _keyAssignment.Task)
             {
-                var endTime = DateTime.UtcNow + TimeSpan.FromSeconds(10);
-
-                while (true)
-                {
-                    if (_Keyhit != Keys.None)
-                    {
-                        return;
-                    }
-
-                    //If 5 seconds have passed, timeout
-                    if (endTime < DateTime.UtcNow) return;
-                }
-            });
-
-            await keyPressTask;
-
-            if (_Keyhit != Keys.None)
-            {
-                SetHotkey(_Keyhit);
-                _Keyhit = Keys.None;
+                SetHotkey(_keyAssignment.Task.Result);
                 OnModified?.Invoke(this);
             }
             else
@@ -74,13 +61,14 @@ namespace DofusSwap.Prefabs
                 SetHotkey(cachedKey);
             }
 
+            _keyAssignment = null;
             _WaitingForKeyPress = false;
         }
 
         public bool OnKeyPressed(Keys key)
         {
-            if (!_WaitingForKeyPress) return false;
-            _Keyhit = key;
+            if (!_WaitingForKeyPress || _keyAssignment == null) return false;
+            _keyAssignment.TrySetResult(key);
             return true;
         }
     }
