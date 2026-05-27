@@ -51,7 +51,7 @@ namespace DofusSwap.KeyboardHook
 
         public IntPtr KeyboardHookProc(int code, IntPtr wParam, IntPtr lParam)
         {
-            if (ConsumeAlt && (wParam == (IntPtr)0x0000000000000104 || wParam == (IntPtr)0x0000000000000101))
+            if (ConsumeAlt && (wParam == (IntPtr)SYS_KEYDOWN || wParam == (IntPtr)WM_KEYUP))
             {
 #if DEBUG
                 Console.WriteLine("Simulated Alt Press Ignored and consumed.");

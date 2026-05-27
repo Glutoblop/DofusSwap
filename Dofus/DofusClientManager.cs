@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,43 +13,32 @@ namespace DofusSwap.Dofus
     internal class DofusClientManager
     {
         [DllImport("user32.dll")]
-        public static extern bool SetForegroundWindow(IntPtr hWnd);
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
-        public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
+        private static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
 
         [DllImport("user32.dll")]
-        public static extern bool BringWindowToTop(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
-
-        //SendInput tutorial
-        //https://www.codeproject.com/Articles/5264831/How-to-Send-Inputs-using-Csharp
+        private static extern bool BringWindowToTop(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetMessageExtraInfo();
 
         [Flags]
-        public enum KeyEventF
+        private enum KeyEventF : uint
         {
             KeyDown = 0x0000,
-            ExtendedKey = 0x0001,
             KeyUp = 0x0002,
-            Unicode = 0x0004,
             Scancode = 0x0008
         }
 
-        [Flags]
-        public enum InputType
+        private enum InputType
         {
-            Mouse = 0,
-            Keyboard = 1,
-            Hardware = 2
+            Keyboard = 1
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct KeyboardInput
+        private struct KeyboardInput
         {
             public ushort wVk;
             public ushort wScan;
@@ -59,33 +48,29 @@ namespace DofusSwap.Dofus
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct MouseInput
+        private struct MouseInput
         {
-            public int dx;
-            public int dy;
-            public uint mouseData;
-            public uint dwFlags;
-            public uint time;
+            public int dx, dy;
+            public uint mouseData, dwFlags, time;
             public IntPtr dwExtraInfo;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct HardwareInput
+        private struct HardwareInput
         {
             public uint uMsg;
-            public ushort wParamL;
-            public ushort wParamH;
+            public ushort wParamL, wParamH;
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct InputUnion
+        private struct InputUnion
         {
             [FieldOffset(0)] public MouseInput mi;
             [FieldOffset(0)] public KeyboardInput ki;
             [FieldOffset(0)] public HardwareInput hi;
         }
 
-        public struct Input
+        private struct Input
         {
             public int type;
             public InputUnion u;
@@ -94,9 +79,7 @@ namespace DofusSwap.Dofus
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint nInputs, Input[] pInputs, int cbSize);
 
-        private const int ALT = 0xA4;
-        private const int EXTENDEDKEY = 0x1;
-        private const int KEYUP = 0x2;
+        private const ushort ALT_SCAN_CODE = 0xb8;
 
         public List<DofusClientData> Clients { get; private set; }
 
@@ -104,23 +87,22 @@ namespace DofusSwap.Dofus
         private bool _AutoDetect = true;
         private bool _Visible = true;
 
-        public static string CONFIG_FILE_PATH = "";
+        public static string CONFIG_FILE_PATH { get; private set; } = "";
 
-        private bool _AwaitingNextHotkey = false;
+        private bool _AwaitingNextHotkey;
         private Keys _NextHotKey = Keys.None;
         private Timer _NextHotkeyTimer;
         private const string NextHotkeyPath = "nexthotkey.txt";
-        private int _NextCharIndex = 0;
+        private int _NextCharIndex;
 
         private List<Process> _DofusProcesses = new List<Process>();
+        private readonly Dictionary<string, Regex> _regexCache = new Dictionary<string, Regex>();
 
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
-
         public Action<string> OnNewDofusClientDetected { get; set; }
-        public Action<DofusClientData> OnClientFocused { get; set; }
         public Action<Keys> OnNextHotkeySet { get; set; }
 
-        public bool IsInit = false;
+        private bool _IsInit;
 
         public void Init()
         {
@@ -128,15 +110,13 @@ namespace DofusSwap.Dofus
 
             if (!File.Exists(CONFIG_FILE_PATH))
             {
-                using (File.CreateText(CONFIG_FILE_PATH))
-                {
-                }
+                using (File.CreateText(CONFIG_FILE_PATH)) { }
             }
 
             if (!File.Exists(NextHotkeyPath)) File.WriteAllText(NextHotkeyPath, Keys.None.ToString());
             _NextHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(NextHotkeyPath));
 
-            IsInit = true;
+            _IsInit = true;
 
             OnNextHotkeySet?.Invoke(_NextHotKey);
 
@@ -145,7 +125,7 @@ namespace DofusSwap.Dofus
 
             _RefreshTimer = new Timer();
             _RefreshTimer.Tick += RefreshTimerOnTick;
-            _RefreshTimer.Interval = (int)TimeSpan.FromSeconds(0.5).TotalMilliseconds;
+            _RefreshTimer.Interval = 500;
             _RefreshTimer.Start();
         }
 
@@ -161,27 +141,39 @@ namespace DofusSwap.Dofus
             UpdateTimerState();
             UpdateConfig(Clients);
 
-            if (!_Visible) return;
+            if (_Visible)
+                RefreshDofusProcesses();
+        }
 
-            RefreshDofusProcesses();
+        private bool WindowTitleMatchesClient(string windowTitle, string clientName)
+        {
+            if (string.IsNullOrEmpty(clientName)) return false;
+
+            if (!_regexCache.TryGetValue(clientName, out var regex))
+            {
+                var escaped = Regex.Escape(clientName);
+                regex = new Regex($@"\b{escaped}\b", RegexOptions.Compiled);
+                _regexCache[clientName] = regex;
+            }
+
+            return regex.IsMatch(windowTitle);
         }
 
         private void RefreshDofusProcesses()
         {
-            _DofusProcesses = new List<Process>();
-            List<Process> processes =
-                Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
-            foreach (var process in processes)
+            foreach (var p in _DofusProcesses)
+                p.Dispose();
+            _DofusProcesses.Clear();
+
+            var allProcesses = Process.GetProcesses();
+            foreach (var process in allProcesses)
             {
-                if ("DofusSwap" == process.ProcessName) continue;
-
-                var windowTitleName = process.MainWindowTitle.ToLowerInvariant();
-
-                //If it only says "dofus [version number]" then its a client in character select, wait.
-                //if (!windowTitleName.Contains("- dofus "))
-                //{
-                //    continue;
-                //}
+                if (process.ProcessName.IndexOf("dofus", StringComparison.OrdinalIgnoreCase) < 0
+                    || process.ProcessName.Equals("DofusSwap", StringComparison.OrdinalIgnoreCase))
+                {
+                    process.Dispose();
+                    continue;
+                }
 
                 _DofusProcesses.Add(process);
             }
@@ -198,7 +190,6 @@ namespace DofusSwap.Dofus
             {
                 _RefreshTimer.Stop();
             }
-
         }
 
         private void RefreshTimerOnTick(object sender, EventArgs e)
@@ -209,26 +200,20 @@ namespace DofusSwap.Dofus
 
             foreach (var process in _DofusProcesses)
             {
-                bool newClientFound = true;
-
+                bool alreadyTracked = false;
                 foreach (var dofusClient in Clients)
                 {
-                    //Match the full word of the character in the window, not just if it contains.
-                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
-                    var clientName = Regex.Escape(dofusClient.name);
-                    var pattern = $@"\b{clientName}\b";
-
-                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
-                        continue;
-
-                    newClientFound = false;
-                    break;
+                    if (WindowTitleMatchesClient(process.MainWindowTitle, dofusClient.name))
+                    {
+                        alreadyTracked = true;
+                        break;
+                    }
                 }
 
-                if (!newClientFound) continue;
+                if (alreadyTracked) continue;
 
-                string dofusCharacterName = process.MainWindowTitle.Split(" ".ToCharArray()).First();
-                if(string.IsNullOrEmpty(dofusCharacterName)) continue;
+                string dofusCharacterName = process.MainWindowTitle.Split(' ').FirstOrDefault();
+                if (string.IsNullOrEmpty(dofusCharacterName)) continue;
                 OnNewDofusClientDetected?.Invoke(dofusCharacterName);
             }
 
@@ -237,13 +222,13 @@ namespace DofusSwap.Dofus
 
         public void UpdateConfig(List<DofusClientData> clients = null)
         {
-            if(!IsInit) return;
+            if (!_IsInit) return;
 
-            if (clients == null) clients = Clients;
-            Clients = clients;
+            if (clients != null) Clients = clients;
 
-            var clientsJson = JsonConvert.SerializeObject(clients, Formatting.Indented);
+            _regexCache.Clear();
 
+            var clientsJson = JsonConvert.SerializeObject(Clients, Formatting.Indented);
             File.WriteAllText(CONFIG_FILE_PATH, clientsJson);
         }
 
@@ -266,16 +251,8 @@ namespace DofusSwap.Dofus
             {
                 foreach (var dofusClient in Clients)
                 {
-                    if (dofusClient.KeyBind != key)
-                        continue;
-
-                    //Match the full word of the character in the window, not just if it contains.
-                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
-                    var clientName = Regex.Escape(dofusClient.name);
-                    var pattern = $@"\b{clientName}\b";
-
-                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
-                        continue;
+                    if (dofusClient.KeyBind != key) continue;
+                    if (!WindowTitleMatchesClient(process.MainWindowTitle, dofusClient.name)) continue;
 
                     clientProcess = process;
                     return dofusClient;
@@ -287,7 +264,6 @@ namespace DofusSwap.Dofus
 
         public bool HandleKeyDown(Keys keyPressed)
         {
-            //Find the process that matches the key press
             var clientData = GetClient(keyPressed, out var clientProcess);
             if (clientData == null)
             {
@@ -297,24 +273,15 @@ namespace DofusSwap.Dofus
             }
 
             bool success = FocusProcessWindow(clientProcess);
-
             _NextCharIndex = Clients.IndexOf(clientData);
 
-            OnClientFocused?.Invoke(clientData);
-
-            //https://www.codeproject.com/Articles/7305/Keyboard-Events-Simulation-using-keybd-event-funct
-
             return success;
-
         }
 
         private bool FocusProcessWindow(Process clientProcess)
         {
-            //OLD - Simulate alt key down
-            //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | 0, 0);
-            //keybd_event(0x12,0xb8,0 , 0);
-
-            Input[] altDown = {
+            var altDown = new[]
+            {
                 new Input
                 {
                     type = (int)InputType.Keyboard,
@@ -323,26 +290,23 @@ namespace DofusSwap.Dofus
                         ki = new KeyboardInput
                         {
                             wVk = 0,
-                            wScan = 0xb8,
+                            wScan = ALT_SCAN_CODE,
                             dwFlags = (uint)(KeyEventF.KeyDown | KeyEventF.Scancode),
                             dwExtraInfo = GetMessageExtraInfo()
                         }
                     }
                 }
             };
+
             OnSimulatingAltIsPressed?.Invoke(true);
             SendInput((uint)altDown.Length, altDown, Marshal.SizeOf(typeof(Input)));
 
-            bool success = true;
-            success &= SetForegroundWindow(clientProcess.MainWindowHandle);
+            bool success = SetForegroundWindow(clientProcess.MainWindowHandle);
             SwitchToThisWindow(clientProcess.MainWindowHandle, true);
             success &= BringWindowToTop(clientProcess.MainWindowHandle);
 
-            // OLD - Simulate a key release
-            //keybd_event((byte)ALT, 0x45, EXTENDEDKEY | KEYUP, 0);
-            //keybd_event(0x12,0xb8,0x0002,0);
-
-            Input[] altUp = {
+            var altUp = new[]
+            {
                 new Input
                 {
                     type = (int)InputType.Keyboard,
@@ -351,13 +315,14 @@ namespace DofusSwap.Dofus
                         ki = new KeyboardInput
                         {
                             wVk = 0,
-                            wScan = 0xb8,
+                            wScan = ALT_SCAN_CODE,
                             dwFlags = (uint)(KeyEventF.KeyUp | KeyEventF.Scancode),
                             dwExtraInfo = GetMessageExtraInfo()
                         }
                     }
                 }
             };
+
             SendInput((uint)altUp.Length, altUp, Marshal.SizeOf(typeof(Input)));
             OnSimulatingAltIsPressed?.Invoke(false);
 
@@ -366,13 +331,9 @@ namespace DofusSwap.Dofus
 
         public bool CheckNextHotkeyAssignment(Keys key)
         {
-            if (!_AwaitingNextHotkey)
-            {
-                return false;
-            }
+            if (!_AwaitingNextHotkey) return false;
 
             _NextHotKey = key;
-
             OnNextHotkeySet?.Invoke(_NextHotKey);
 
             _NextHotkeyTimer.Stop();
@@ -380,7 +341,6 @@ namespace DofusSwap.Dofus
             _NextHotkeyTimer = null;
 
             File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
-
             _AwaitingNextHotkey = false;
 
             return true;
@@ -389,31 +349,23 @@ namespace DofusSwap.Dofus
         public bool CheckNextHotkeyTrigger(Keys key)
         {
             if (_NextHotKey != key) return false;
+            if (Clients == null || Clients.Count == 0) return false;
+
+            RefreshDofusProcesses();
 
             var startingIndex = _NextCharIndex;
-            var processes = Process.GetProcesses().Where(s => s.ProcessName.ToLowerInvariant().Contains("dofus")).ToList();
-
             do
             {
-                _NextCharIndex++;
-                if (_NextCharIndex >= Clients.Count) _NextCharIndex = 0;
-
+                _NextCharIndex = (_NextCharIndex + 1) % Clients.Count;
                 var dofusClient = Clients[_NextCharIndex];
-                
-                foreach (var process in processes)
+
+                foreach (var process in _DofusProcesses)
                 {
-                    //Match the full word of the character in the window, not just if it contains.
-                    //This fixes issues if you had a character called Gluto and Glutoblop. Gluto is contained in Glutoblop.
-                    var clientName = Regex.Escape(dofusClient.name);
-                    var pattern = $@"\b{clientName}\b";
-
-                    if (!Regex.IsMatch(process.MainWindowTitle, pattern))
-                        continue;
-
-                    return FocusProcessWindow(process);
+                    if (WindowTitleMatchesClient(process.MainWindowTitle, dofusClient.name))
+                        return FocusProcessWindow(process);
                 }
             }
-            while(startingIndex != _NextCharIndex);
+            while (startingIndex != _NextCharIndex);
 
             return false;
         }
@@ -426,7 +378,8 @@ namespace DofusSwap.Dofus
                 _NextHotkeyTimer?.Stop();
                 _NextHotkeyTimer?.Dispose();
                 _NextHotkeyTimer = null;
-                OnNextHotkeySet?.Invoke(_NextHotKey = Keys.None);
+                _NextHotKey = Keys.None;
+                OnNextHotkeySet?.Invoke(_NextHotKey);
                 File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
                 return;
             }
@@ -438,10 +391,11 @@ namespace DofusSwap.Dofus
                 File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
 
                 _NextHotkeyTimer.Stop();
+                _NextHotkeyTimer.Dispose();
                 _NextHotkeyTimer = null;
                 _AwaitingNextHotkey = false;
             };
-            _NextHotkeyTimer.Interval = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+            _NextHotkeyTimer.Interval = 5000;
             _NextHotkeyTimer.Start();
 
             _AwaitingNextHotkey = true;

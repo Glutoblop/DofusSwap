@@ -6,7 +6,7 @@ namespace DofusSwap.Tray
 {
     public class TrayManager
     {
-        static NotifyIcon notifyIcon = new NotifyIcon();
+        private readonly NotifyIcon notifyIcon = new NotifyIcon();
 
         public event Action<bool> OnVisbilityToggled;
 
