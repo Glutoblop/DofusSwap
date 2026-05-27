@@ -89,15 +89,17 @@ namespace DofusSwap.Dofus
 
         public static string CONFIG_FILE_PATH { get; private set; } = "";
 
-        private bool _AwaitingNextHotkey;
         private Keys _NextHotKey = Keys.None;
-        private Timer _NextHotkeyTimer;
+        private bool _NextHotKeyShift;
+        private bool _NextHotKeyControl;
+        private bool _NextHotKeyAlt;
         private const string NextHotkeyPath = "nexthotkey.txt";
         private int _NextCharIndex;
 
-        private bool _AwaitingPrevHotkey;
         private Keys _PrevHotKey = Keys.None;
-        private Timer _PrevHotkeyTimer;
+        private bool _PrevHotKeyShift;
+        private bool _PrevHotKeyControl;
+        private bool _PrevHotKeyAlt;
         private const string PrevHotkeyPath = "prevhotkey.txt";
 
         private List<Process> _DofusProcesses = new List<Process>();
@@ -105,8 +107,8 @@ namespace DofusSwap.Dofus
 
         public Action<bool> OnSimulatingAltIsPressed { get; set; }
         public Action<string> OnNewDofusClientDetected { get; set; }
-        public Action<Keys> OnNextHotkeySet { get; set; }
-        public Action<Keys> OnPrevHotkeySet { get; set; }
+        public Action<Keys, bool, bool, bool> OnNextHotkeySet { get; set; }
+        public Action<Keys, bool, bool, bool> OnPrevHotkeySet { get; set; }
 
         private bool _IsInit;
 
@@ -119,16 +121,13 @@ namespace DofusSwap.Dofus
                 using (File.CreateText(CONFIG_FILE_PATH)) { }
             }
 
-            if (!File.Exists(NextHotkeyPath)) File.WriteAllText(NextHotkeyPath, Keys.None.ToString());
-            _NextHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(NextHotkeyPath));
-
-            if (!File.Exists(PrevHotkeyPath)) File.WriteAllText(PrevHotkeyPath, Keys.None.ToString());
-            _PrevHotKey = (Keys)Enum.Parse(typeof(Keys), File.ReadAllText(PrevHotkeyPath));
+            LoadCycleHotkey(NextHotkeyPath, out _NextHotKey, out _NextHotKeyShift, out _NextHotKeyControl, out _NextHotKeyAlt);
+            LoadCycleHotkey(PrevHotkeyPath, out _PrevHotKey, out _PrevHotKeyShift, out _PrevHotKeyControl, out _PrevHotKeyAlt);
 
             _IsInit = true;
 
-            OnNextHotkeySet?.Invoke(_NextHotKey);
-            OnPrevHotkeySet?.Invoke(_PrevHotKey);
+            OnNextHotkeySet?.Invoke(_NextHotKey, _NextHotKeyShift, _NextHotKeyControl, _NextHotKeyAlt);
+            OnPrevHotkeySet?.Invoke(_PrevHotKey, _PrevHotKeyShift, _PrevHotKeyControl, _PrevHotKeyAlt);
 
             RefreshConfig();
             UpdateConfig(Clients);
@@ -339,26 +338,47 @@ namespace DofusSwap.Dofus
             return success;
         }
 
-        public bool CheckNextHotkeyAssignment(Keys key)
+        private static void LoadCycleHotkey(string path, out Keys key, out bool shift, out bool control, out bool alt)
         {
-            if (!_AwaitingNextHotkey) return false;
-
-            _NextHotKey = key;
-            OnNextHotkeySet?.Invoke(_NextHotKey);
-
-            _NextHotkeyTimer.Stop();
-            _NextHotkeyTimer.Dispose();
-            _NextHotkeyTimer = null;
-
-            File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
-            _AwaitingNextHotkey = false;
-
-            return true;
+            if (!File.Exists(path)) File.WriteAllText(path, Keys.None.ToString());
+            var parts = File.ReadAllText(path).Split(',');
+            key = (Keys)Enum.Parse(typeof(Keys), parts[0]);
+            shift = parts.Length > 1 && bool.Parse(parts[1]);
+            control = parts.Length > 2 && bool.Parse(parts[2]);
+            alt = parts.Length > 3 && bool.Parse(parts[3]);
         }
 
-        public bool CheckNextHotkeyTrigger(Keys key)
+        private static void SaveCycleHotkey(string path, Keys key, bool shift, bool control, bool alt)
+        {
+            File.WriteAllText(path, $"{key},{shift},{control},{alt}");
+        }
+
+        public void SetNextHotkey(Keys key, bool shift, bool control, bool alt)
+        {
+            _NextHotKey = key;
+            _NextHotKeyShift = shift;
+            _NextHotKeyControl = control;
+            _NextHotKeyAlt = alt;
+            SaveCycleHotkey(NextHotkeyPath, key, shift, control, alt);
+            OnNextHotkeySet?.Invoke(key, shift, control, alt);
+        }
+
+        public void SetPrevHotkey(Keys key, bool shift, bool control, bool alt)
+        {
+            _PrevHotKey = key;
+            _PrevHotKeyShift = shift;
+            _PrevHotKeyControl = control;
+            _PrevHotKeyAlt = alt;
+            SaveCycleHotkey(PrevHotkeyPath, key, shift, control, alt);
+            OnPrevHotkeySet?.Invoke(key, shift, control, alt);
+        }
+
+        public bool CheckNextHotkeyTrigger(Keys key, bool shift, bool control, bool alt)
         {
             if (_NextHotKey != key) return false;
+            if (_NextHotKeyShift && !shift) return false;
+            if (_NextHotKeyControl && !control) return false;
+            if (_NextHotKeyAlt && !alt) return false;
             if (Clients == null || Clients.Count == 0) return false;
 
             RefreshDofusProcesses();
@@ -380,57 +400,12 @@ namespace DofusSwap.Dofus
             return false;
         }
 
-        public void StartAssignNextHotKey()
-        {
-            if (_AwaitingNextHotkey)
-            {
-                _AwaitingNextHotkey = false;
-                _NextHotkeyTimer?.Stop();
-                _NextHotkeyTimer?.Dispose();
-                _NextHotkeyTimer = null;
-                _NextHotKey = Keys.None;
-                OnNextHotkeySet?.Invoke(_NextHotKey);
-                File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
-                return;
-            }
-
-            _NextHotkeyTimer = new Timer();
-            _NextHotkeyTimer.Tick += (o, args) =>
-            {
-                OnNextHotkeySet?.Invoke(_NextHotKey);
-                File.WriteAllText(NextHotkeyPath, _NextHotKey.ToString());
-
-                _NextHotkeyTimer.Stop();
-                _NextHotkeyTimer.Dispose();
-                _NextHotkeyTimer = null;
-                _AwaitingNextHotkey = false;
-            };
-            _NextHotkeyTimer.Interval = 5000;
-            _NextHotkeyTimer.Start();
-
-            _AwaitingNextHotkey = true;
-        }
-
-        public bool CheckPrevHotkeyAssignment(Keys key)
-        {
-            if (!_AwaitingPrevHotkey) return false;
-
-            _PrevHotKey = key;
-            OnPrevHotkeySet?.Invoke(_PrevHotKey);
-
-            _PrevHotkeyTimer.Stop();
-            _PrevHotkeyTimer.Dispose();
-            _PrevHotkeyTimer = null;
-
-            File.WriteAllText(PrevHotkeyPath, _PrevHotKey.ToString());
-            _AwaitingPrevHotkey = false;
-
-            return true;
-        }
-
-        public bool CheckPrevHotkeyTrigger(Keys key)
+        public bool CheckPrevHotkeyTrigger(Keys key, bool shift, bool control, bool alt)
         {
             if (_PrevHotKey != key) return false;
+            if (_PrevHotKeyShift && !shift) return false;
+            if (_PrevHotKeyControl && !control) return false;
+            if (_PrevHotKeyAlt && !alt) return false;
             if (Clients == null || Clients.Count == 0) return false;
 
             RefreshDofusProcesses();
@@ -450,37 +425,6 @@ namespace DofusSwap.Dofus
             while (startingIndex != _NextCharIndex);
 
             return false;
-        }
-
-        public void StartAssignPrevHotKey()
-        {
-            if (_AwaitingPrevHotkey)
-            {
-                _AwaitingPrevHotkey = false;
-                _PrevHotkeyTimer?.Stop();
-                _PrevHotkeyTimer?.Dispose();
-                _PrevHotkeyTimer = null;
-                _PrevHotKey = Keys.None;
-                OnPrevHotkeySet?.Invoke(_PrevHotKey);
-                File.WriteAllText(PrevHotkeyPath, _PrevHotKey.ToString());
-                return;
-            }
-
-            _PrevHotkeyTimer = new Timer();
-            _PrevHotkeyTimer.Tick += (o, args) =>
-            {
-                OnPrevHotkeySet?.Invoke(_PrevHotKey);
-                File.WriteAllText(PrevHotkeyPath, _PrevHotKey.ToString());
-
-                _PrevHotkeyTimer.Stop();
-                _PrevHotkeyTimer.Dispose();
-                _PrevHotkeyTimer = null;
-                _AwaitingPrevHotkey = false;
-            };
-            _PrevHotkeyTimer.Interval = 5000;
-            _PrevHotkeyTimer.Start();
-
-            _AwaitingPrevHotkey = true;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace DofusSwap
         private TrayManager _TrayManager;
         private KeyboardManager _KeyboardManager;
         private DofusClientManager _DofusClientManager;
+        private HotkeyAssignOverlay _hotkeyOverlay;
 
         private bool _Initialising;
         private List<ConfiguredCharacterName> _ActiveCharacters = new List<ConfiguredCharacterName>();
@@ -52,20 +53,28 @@ namespace DofusSwap
 
             _DofusClientManager.OnNewDofusClientDetected += dofusCharacterName =>
             {
-                AddCharacter(dofusCharacterName, Keys.None, false, false);
+                AddCharacter(dofusCharacterName, Keys.None, false, false, false);
             };
 
-            _DofusClientManager.OnNextHotkeySet += nextHotkey =>
+            _DofusClientManager.OnNextHotkeySet += (key, shift, control, alt) =>
             {
-                NextCharacterHotkey.Text = nextHotkey == Keys.None ? "Next Char Hotkey" : $"[ {nextHotkey:G} ]";
+                NextCharacterHotkey.Text = key == Keys.None
+                    ? "Next Char Hotkey"
+                    : HotkeyAssignOverlay.FormatKeyCombo(key, shift, control, alt);
             };
 
-            _DofusClientManager.OnPrevHotkeySet += prevHotkey =>
+            _DofusClientManager.OnPrevHotkeySet += (key, shift, control, alt) =>
             {
-                PrevCharacterHotkey.Text = prevHotkey == Keys.None ? "Prev Char Hotkey" : $"[ {prevHotkey:G} ]";
+                PrevCharacterHotkey.Text = key == Keys.None
+                    ? "Prev Char Hotkey"
+                    : HotkeyAssignOverlay.FormatKeyCombo(key, shift, control, alt);
             };
 
             InitializeComponent();
+
+            _hotkeyOverlay = new HotkeyAssignOverlay();
+            Controls.Add(_hotkeyOverlay);
+            _hotkeyOverlay.BringToFront();
 
             AppTheme.Apply(this);
             AppTheme.EnableDoubleBuffering(ActiveCharacters);
@@ -83,7 +92,7 @@ namespace DofusSwap
 
             foreach (var client in _DofusClientManager.Clients)
             {
-                AddCharacter(client.name, client.KeyBind, client.shift, client.control);
+                AddCharacter(client.name, client.KeyBind, client.shift, client.control, client.alt);
             }
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -99,7 +108,7 @@ namespace DofusSwap
             set { base.Text = value; }
         }
 
-        private void AddCharacter(string displayName, Keys key, bool shift, bool control)
+        private void AddCharacter(string displayName, Keys key, bool shift, bool control, bool alt)
         {
             var configuredCharacter = new ConfiguredCharacterName();
             configuredCharacter.SetDisplayName(displayName);
@@ -149,9 +158,29 @@ namespace DofusSwap
             var hotkey = new ConfiguredHotkey();
             hotkey.SetRequireShift(shift);
             hotkey.SetRequireControl(control);
+            hotkey.SetRequireAlt(alt);
             hotkey.SetHotkey(key);
             hotkey.Location = new Point(0, _ActiveHotkeys.Count * configuredCharacter.Size.Height);
             AppTheme.ApplyToControl(hotkey);
+
+            hotkey.OnAssignRequested += requestedHotkey =>
+            {
+                var charIndex = _ActiveHotkeys.IndexOf(requestedHotkey);
+                var charName = charIndex >= 0 && charIndex < _ActiveCharacters.Count
+                    ? _ActiveCharacters[charIndex].DisplayName
+                    : "";
+                var context = string.IsNullOrEmpty(charName)
+                    ? "for Character"
+                    : $"for Character: {charName}";
+
+                _hotkeyOverlay.ShowForAssignment(context,
+                    requestedHotkey.Key, requestedHotkey.RequireShift, requestedHotkey.RequireControl, requestedHotkey.RequireAlt,
+                    (k, s, c, a) =>
+                    {
+                        requestedHotkey.SetAll(k, s, c, a);
+                        UpdateConfigs();
+                    });
+            };
 
             hotkey.OnModified += modifiedHotkey =>
             {
@@ -202,6 +231,7 @@ namespace DofusSwap
                     key = hotkey.Key.ToString(),
                     shift = hotkey.RequireShift,
                     control = hotkey.RequireControl,
+                    alt = hotkey.RequireAlt,
                     name = activeCharacter.DisplayName,
                 });
             }
@@ -237,35 +267,29 @@ namespace DofusSwap
         {
             _keysDown.Add(key);
 
-            if (Visible)
-            {
-                if (_DofusClientManager.CheckNextHotkeyAssignment(key))
-                    return false;
-
-                if (_DofusClientManager.CheckPrevHotkeyAssignment(key))
-                    return false;
-
-                foreach (var hotkey in _ActiveHotkeys)
-                {
-                    if (hotkey.OnKeyPressed(key))
-                        break;
-                }
-
-                return false;
-            }
-
-            if (_DofusClientManager.CheckNextHotkeyTrigger(key))
-                return true;
-
-            if (_DofusClientManager.CheckPrevHotkeyTrigger(key))
-                return true;
-
             var shift = _keysDown.Contains(Keys.ShiftKey)
                         || _keysDown.Contains(Keys.LShiftKey)
                         || _keysDown.Contains(Keys.RShiftKey);
             var control = _keysDown.Contains(Keys.ControlKey)
                           || _keysDown.Contains(Keys.LControlKey)
                           || _keysDown.Contains(Keys.RControlKey);
+            var alt = _keysDown.Contains(Keys.Menu)
+                      || _keysDown.Contains(Keys.LMenu)
+                      || _keysDown.Contains(Keys.RMenu);
+
+            if (Visible)
+            {
+                if (_hotkeyOverlay.HandleKeyPress(key, shift, control, alt))
+                    return true;
+
+                return false;
+            }
+
+            if (_DofusClientManager.CheckNextHotkeyTrigger(key, shift, control, alt))
+                return true;
+
+            if (_DofusClientManager.CheckPrevHotkeyTrigger(key, shift, control, alt))
+                return true;
 
             bool isHotkey = false;
 
@@ -278,6 +302,9 @@ namespace DofusSwap
                     return false;
 
                 if (hotkey.RequireControl && !control)
+                    return false;
+
+                if (hotkey.RequireAlt && !alt)
                     return false;
             }
 
@@ -314,7 +341,7 @@ namespace DofusSwap
         private void AddCharacterButton_Click(object sender, EventArgs e)
         {
             if (_ActiveCharacters.Count == 8) return;
-            AddCharacter("", Keys.None, false, false);
+            AddCharacter("", Keys.None, false, false, false);
         }
 
         private void DofusForm_Load(object sender, EventArgs e)
@@ -351,12 +378,18 @@ namespace DofusSwap
             }
             else if (e.KeyCode == Keys.Escape)
             {
-                WindowState = FormWindowState.Minimized;
+                if (_hotkeyOverlay.Visible)
+                    _hotkeyOverlay.Hide();
+                else
+                    WindowState = FormWindowState.Minimized;
             }
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (_hotkeyOverlay.Visible)
+                return true;
+
             if (keyData == Keys.Tab && _ActiveCharacters.Count > 0)
             {
                 _FocusedIndex = (_FocusedIndex + 1) % _ActiveCharacters.Count;
@@ -382,14 +415,16 @@ namespace DofusSwap
 
         private void NextCharacterHotkey_Click(object sender, EventArgs e)
         {
-            NextCharacterHotkey.Text = "Press Key..";
-            _DofusClientManager.StartAssignNextHotKey();
+            _hotkeyOverlay.ShowForAssignment("for Next Character Cycle",
+                Keys.None, false, false, false,
+                (key, shift, control, alt) => _DofusClientManager.SetNextHotkey(key, shift, control, alt));
         }
 
         private void PrevCharacterHotkey_Click(object sender, EventArgs e)
         {
-            PrevCharacterHotkey.Text = "Press Key..";
-            _DofusClientManager.StartAssignPrevHotKey();
+            _hotkeyOverlay.ShowForAssignment("for Previous Character Cycle",
+                Keys.None, false, false, false,
+                (key, shift, control, alt) => _DofusClientManager.SetPrevHotkey(key, shift, control, alt));
         }
     }
 }

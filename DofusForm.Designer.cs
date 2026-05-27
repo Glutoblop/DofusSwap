@@ -1,4 +1,4 @@
-﻿
+
 namespace DofusSwap
 {
     partial class DofusForm
@@ -41,9 +41,9 @@ namespace DofusSwap
             this.PrevCharacterHotkey = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // AddCharacterButton
-            // 
+            //
             this.AddCharacterButton.Location = new System.Drawing.Point(12, 27);
             this.AddCharacterButton.Name = "AddCharacterButton";
             this.AddCharacterButton.Size = new System.Drawing.Size(106, 36);
@@ -51,9 +51,9 @@ namespace DofusSwap
             this.AddCharacterButton.Text = "Add Character";
             this.AddCharacterButton.UseVisualStyleBackColor = true;
             this.AddCharacterButton.Click += new System.EventHandler(this.AddCharacterButton_Click);
-            // 
+            //
             // menuStrip1
-            // 
+            //
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ConfigToolMenuStripItem,
@@ -64,23 +64,23 @@ namespace DofusSwap
             this.menuStrip1.Size = new System.Drawing.Size(604, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
-            // 
+            //
             // ConfigToolMenuStripItem
-            // 
+            //
             this.ConfigToolMenuStripItem.Name = "ConfigToolMenuStripItem";
             this.ConfigToolMenuStripItem.Size = new System.Drawing.Size(52, 22);
             this.ConfigToolMenuStripItem.Text = "Folder";
             this.ConfigToolMenuStripItem.Click += new System.EventHandler(this.ConfigToolStrip_OnClick);
-            // 
+            //
             // AutoDetectMenuItem
-            // 
+            //
             this.AutoDetectMenuItem.Name = "AutoDetectMenuItem";
             this.AutoDetectMenuItem.Size = new System.Drawing.Size(82, 22);
             this.AutoDetectMenuItem.Text = "Auto Detect";
             this.AutoDetectMenuItem.Click += new System.EventHandler(this.autoDetectToolStripMenuItem_Click);
-            // 
+            //
             // SaveButton
-            // 
+            //
             this.SaveButton.Location = new System.Drawing.Point(486, 27);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(106, 36);
@@ -88,26 +88,26 @@ namespace DofusSwap
             this.SaveButton.Text = "Save";
             this.SaveButton.UseVisualStyleBackColor = true;
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
-            // 
+            //
             // ActiveCharacters
-            // 
+            //
             this.ActiveCharacters.Location = new System.Drawing.Point(12, 69);
             this.ActiveCharacters.Name = "ActiveCharacters";
             this.ActiveCharacters.Size = new System.Drawing.Size(280, 430);
             this.ActiveCharacters.TabIndex = 5;
-            // 
+            //
             // ActiveHotkeys
-            // 
+            //
             this.ActiveHotkeys.Location = new System.Drawing.Point(298, 69);
             this.ActiveHotkeys.Name = "ActiveHotkeys";
             this.ActiveHotkeys.Size = new System.Drawing.Size(280, 430);
             this.ActiveHotkeys.TabIndex = 6;
-            // 
+            //
             // NextCharacterHotkey
-            // 
-            this.NextCharacterHotkey.Location = new System.Drawing.Point(256, 27);
+            //
+            this.NextCharacterHotkey.Location = new System.Drawing.Point(186, 27);
             this.NextCharacterHotkey.Name = "NextCharacterHotkey";
-            this.NextCharacterHotkey.Size = new System.Drawing.Size(78, 36);
+            this.NextCharacterHotkey.Size = new System.Drawing.Size(130, 36);
             this.NextCharacterHotkey.TabIndex = 8;
             this.NextCharacterHotkey.Text = "Next Char Hotkey";
             this.NextCharacterHotkey.UseVisualStyleBackColor = true;
@@ -115,16 +115,16 @@ namespace DofusSwap
             //
             // PrevCharacterHotkey
             //
-            this.PrevCharacterHotkey.Location = new System.Drawing.Point(340, 27);
+            this.PrevCharacterHotkey.Location = new System.Drawing.Point(322, 27);
             this.PrevCharacterHotkey.Name = "PrevCharacterHotkey";
-            this.PrevCharacterHotkey.Size = new System.Drawing.Size(78, 36);
+            this.PrevCharacterHotkey.Size = new System.Drawing.Size(130, 36);
             this.PrevCharacterHotkey.TabIndex = 9;
             this.PrevCharacterHotkey.Text = "Prev Char Hotkey";
             this.PrevCharacterHotkey.UseVisualStyleBackColor = true;
             this.PrevCharacterHotkey.Click += new System.EventHandler(this.PrevCharacterHotkey_Click);
             //
             // DofusForm
-            // 
+            //
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -165,4 +165,3 @@ namespace DofusSwap
         private System.Windows.Forms.Button PrevCharacterHotkey;
     }
 }
-

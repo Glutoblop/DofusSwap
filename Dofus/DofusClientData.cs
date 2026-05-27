@@ -9,6 +9,7 @@ namespace DofusSwap.Dofus
         public string key { get; set; }
         public bool shift { get; set; }
         public bool control { get; set; }
+        public bool alt { get; set; }
 
         [JsonIgnore]
         public Keys KeyBind { get; set; }

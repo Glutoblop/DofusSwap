@@ -43,6 +43,7 @@
   <PropertyGroup>
     <GenerateResourceMSBuildArchitecture>CurrentArchitecture</GenerateResourceMSBuildArchitecture>
     <GenerateResourceMSBuildRuntime>CurrentRuntime</GenerateResourceMSBuildRuntime>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -265,6 +266,9 @@
     <Compile Include="KeyboardHook\KeyboardManager.cs" />
     <Compile Include="UI\AppTheme.cs" />
     <Compile Include="UI\Animator.cs" />
+    <Compile Include="UI\HotkeyAssignOverlay.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Prefabs\ConfiguredCharacterName.cs">
       <SubType>UserControl</SubType>
     </Compile>
